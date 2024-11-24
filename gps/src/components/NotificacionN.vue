@@ -21,10 +21,10 @@
             <div v-if="showMenu" class="menu-panel">
                 <div class="menu-header">Opciones</div>
                 <div class="menu-items">
-                    <router-link @click="clearNotifications" class="menu-item">
-                <i class='bx bx-trash'></i>
-                <span>Limpiar todo</span>
-            </router-link>
+                    <a href="#" @click.prevent="clearNotifications" class="menu-item">
+                        <i class='bx bx-trash'></i>
+                        <span>Limpiar todo</span>
+                    </a>
                     <router-link to="/reporte2" class="menu-item">
                         <i class='bx bx-folder-open'></i>
                         <span>Ver historial</span>
@@ -34,22 +34,15 @@
         </Transition>
 
         <div class="notifications-wrapper">
-            <TransitionGroup 
-                name="notification"
-                tag="ul"
-                class="notifications-list"
-            >
-                <li v-for="(notification, index) in notifications" 
-                    :key="index"
-                    class="notification-item"
-                    :class="{ 'unread': !notification.read }"
-                >
+            <TransitionGroup name="notification" tag="ul" class="notifications-list">
+                <li v-for="(notification, index) in notifications" :key="index" class="notification-item"
+                    :class="{ 'unread': !notification.read }">
                     <div class="notification-icon">
                         <i class='bx bx-message-rounded-dots'></i>
                     </div>
                     <div class="notification-content">
                         <div class="notification-text">{{ notification.notificationName }}</div>
-                        <div class="notification-time">{{ formatearFecha(notification.notificationTime) }}</div>
+                        <div class="notification-time">{{formatDate(utc(notification.notificationTime) ) }}</div>
                     </div>
                     <button class="notification-action" @click="markAsRead(index)">
                         <i class='bx bx-check'></i>
@@ -61,13 +54,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted  } from 'vue';
+import { ref, onMounted } from 'vue';
 import iziToast from 'izitoast';
-import formatearFecha from '../../Back-end/utils/expresiones';
+import  { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 const notifications = ref([]);
 
 const showMenu = ref(false);
-
 
 const toggleMenu = () => {
     showMenu.value = !showMenu.value;
@@ -77,11 +69,9 @@ const markAsRead = (index) => {
     notifications.value[index].read = true;
 };
 
-
-const cargarAlertas = async () => {
+const cargarNotificaciones = async () => {
     try {
-        // Hacer la solicitud para obtener alertas por IMEI
-        const response = await fetch(`http://3.12.147.103/notificaciones`);
+        const response = await fetch('http://3.12.147.103/notificaciones');
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error del servidor:', errorText);
@@ -89,11 +79,16 @@ const cargarAlertas = async () => {
         }
         const data = await response.json();
         console.log(data); // Verifica los datos recibidos
-        // Filtrar las nuevas alertas que no están en el estado actual
+
+        // Filtrar nuevas alertas
         const nuevasAlertas = data.filter(alerta => !notifications.value.some(a => a._id === alerta._id));
         if (nuevasAlertas.length > 0) {
             notifications.value = [...notifications.value, ...nuevasAlertas];
         }
+
+        // Ordenar las notificaciones por fecha en orden descendente
+        notifications.value.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
+
         // Mostrar alerta si hay una alerta en la respuesta
         if (data.alert) {
             iziToast.warning({
@@ -104,23 +99,10 @@ const cargarAlertas = async () => {
             });
         }
     } catch (error) {
-        console.error('Error al cargar alertas:', error);
-    }
-};
-const cargarNotificaciones = async () => {
-    try {
-        const response = await fetch('http://3.12.147.103/notificaciones');
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error del servidor:', errorText);
-            return;
-        }
-        const data = await response.json();
-        notifications.value = data;
-    } catch (error) {
         console.error('Error al cargar notificaciones:', error);
     }
 };
+
 const clearNotifications = async () => {
     try {
         await fetch('http://3.12.147.103/notificaciones', {
@@ -131,31 +113,27 @@ const clearNotifications = async () => {
         console.error('Error al eliminar notificaciones:', error);
     }
 };
+
 onMounted(() => {
     cargarNotificaciones();
-    cargarAlertas();
-    // Configurar WebSocket para recibir notificaciones en tiempo real
     let ws = new WebSocket('ws://3.12.147.103');
     ws.onmessage = (event) => {
-    const notificacion = JSON.parse(event.data);
-    // Verifica si la notificación ya existe antes de agregarla
-    if (!notifications.value.some(alert => alert._id === notificacion._id)) {
-        notifications.value.push(notificacion);
-    }
-};
-ws.onclose = () => {
-    console.log('WebSocket cerrado. Reintentando...');
-    setTimeout(() => {
-        // Reintentar conexión
-        const newWs = new WebSocket('ws://3.12.147.103');
-        ws = newWs;
-    }, 5000);
-};
+        const notificacion = JSON.parse(event.data);
+        if (!notifications.value.some(alert => alert._id === notificacion._id)) {
+            notifications.value.push(notificacion);
+        }
+    };
+    ws.onclose = () => {
+        console.log('WebSocket cerrado. Reintentando...');
+        setTimeout(() => {
+            const newWs = new WebSocket('ws://3.12.147.103');
+            ws = newWs;
+        }, 5000);
+    };
     ws.onerror = (error) => {
         console.error('Error en WebSocket:', error);
     };
 });
-
 </script>
 
 <style scoped>
@@ -375,6 +353,7 @@ ws.onclose = () => {
         opacity: 0;
         transform: translate(-50%, -40%);
     }
+
     to {
         opacity: 1;
         transform: translate(-50%, -50%);
@@ -386,6 +365,7 @@ ws.onclose = () => {
         opacity: 0;
         transform: translateX(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);

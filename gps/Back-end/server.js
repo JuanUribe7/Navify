@@ -16,7 +16,7 @@ const notificacionRoutes = require('./routes/notificaciones');
 const { WebSocketServer } = require('ws');
 const iniciarWatcher = require('./utils/notificationWatcher');
 const Notification = require('./models/notification'); // Importa el modelo de notificación
-const formatearFecha = require('./utils/expresiones');
+const Alert = require('./models/Alert'); // Importa el modelo de alerta
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -54,8 +54,6 @@ app.use(express.static(path.join(__dirname, 'dist' )));
 
 // Servidor TCP
 let cliente = null;
-let imei = null;
-
 
 
 var tcpServer = net.createServer((client) => {
@@ -88,8 +86,9 @@ var tcpServer = net.createServer((client) => {
             
             // Preparar los datos para enviar a la ruta /update-from-gps
             if (gt06.event.string === 'location') {
-                const gpsTime = new Date(gt06.fixTime);
-            imei = gt06.imei;
+                const gpsTime = new Date();
+
+
                 // Convertir a la hora local
                 const localTime = new Date(gpsTime.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
                 
@@ -189,19 +188,27 @@ async function SendCommand(commandNumber) {
       if (cliente) {
         cliente.write(commandBuffer);
         console.log('Command sent:', commandBuffer.toString('hex'));
-        const time =  new Date().toISOString();
+        const time = new Date();
         // Guardar la notificación en la base de datos
+        const localTimeString = time.toLocaleString('en-US', { timeZone: 'America/Bogota' });
+        const localTime = new Date(localTimeString);
+
         const notification = new Notification({
-          imei: "863829070233398",
-          notificationName: alertaName ,
-          
-          notificationTime: formatearFecha(time),
-          notificationType: 'Control'
-          
+            imei: "863829070233398",
+            notificationName: alertaName ,
+            notificationTime: localTime,
+            notificationType: 'Control'
+          });
+
+          const alert = new Alert({
+            imei: "863829070233398",
+            alertName: alertaName,
+            alertTime: localTime,
+            alertType: 'control'
         });
-      
           try {
             await notification.save();
+            await alert.save();
             console.log('Notificación guardada en la base de datos');
           } catch (error) {
             console.error('Error al guardar la notificación en la base de datos:', error);

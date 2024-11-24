@@ -3,10 +3,8 @@ const router = express.Router();
 const { Device, DeviceStatus} = require('../models/Device'); // Asegúrate de importar DeviceStatus
 const Alert = require('../models/Alert'); 
 const HistoryData = require('../models/HistoryData'); // Importa HistoryData desde HistoryData.js
-const formatearFecha = require('../utils/expresiones')
 const Notification = require('../models/notification');
-const Route = require('../models/Route');
-const app = express();
+
 // Endpoint para obtener todos los dispositivos
 router.get('/', async (req, res) => {
     try {
@@ -94,27 +92,23 @@ router.post('/update-from-gps', async (req, res) => {
                 notificationTime: time,
                 notificationType: 'maxSpeed' // Tipo de notificación
             });
-            try {
-                await notificacion.save();
-                console.log(`Notificación de exceso de velocidad guardada para IMEI: ${imei}`);
-            } catch (error) {
-                console.error('Error al guardar la notificación:', error);
-            }
             const alert = new Alert({
                 imei: imei,
                 alertName: `Exceso de velocidad: ${speed} km/h`,
                 alertTime: time
             });
-        
-
-
-        
             try {
+                await notificacion.save();
                 await alert.save();
-                console.log(`Alerta de exceso de velocidad guardada para IMEI: ${imei}`);
+                console.log(`Notificación de exceso de velocidad guardada para IMEI: ${imei}`);
             } catch (error) {
-                console.error('Error al guardar la alerta:', error);
+                console.error('Error al guardar la notificación:', error);
             }
+         
+        
+
+
+
         }
 
         console.log(`Ubicación actualizada para IMEI: ${imei} - Latitud: ${Lat}, Longitud: ${Lon}`);
