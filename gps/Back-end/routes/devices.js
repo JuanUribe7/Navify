@@ -133,6 +133,8 @@ router.post('/', async (req, res) => {
             responsible,
             imei,
             phoneNumber,
+            routeName: 'Geozona no asignada', 
+            geozoneName: 'Ruta no asignada' 
         });
 
         const dispositivoGuardado = await nuevoDispositivo.save();
@@ -142,7 +144,6 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Error al agregar dispositivo: ' + error.message });
     }
 });
-
 // Endpoint para actualizar un dispositivo existente
 router.put('/:id', async (req, res) => {
     try {
