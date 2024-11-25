@@ -89,15 +89,7 @@ const cargarNotificaciones = async () => {
         // Ordenar las notificaciones por fecha en orden descendente
         notifications.value.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
 
-        // Mostrar alerta si hay una alerta en la respuesta
-        if (data.alert) {
-            iziToast.warning({
-                title: 'Alerta',
-                message: data.alert.alertName,
-                position: 'topRight',
-                timeout: 5000 // Mostrar la alerta durante 5 segundos
-            });
-        }
+        // Mostrar alerta si hay una alerta en la respuesta¿
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
     }
