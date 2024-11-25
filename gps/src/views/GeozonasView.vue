@@ -20,9 +20,9 @@
         </div>
         <div class="device-list-container">
           <ul class="device-list">
-            <li @click="selectDevice(item)" v-for="item in filteredResults" :key="item._id">
+            <li @click="selectedGeozone(item)" v-for="item in filteredResults" :key="item._id">
               <i class='bx bxs-car'></i>
-              {{ item.deviceName }}
+              {{ item.name }}
             </li>
           </ul>
         </div>
@@ -47,12 +47,12 @@
     </div>
   </section>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
 import * as L from 'leaflet';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -65,10 +65,10 @@ import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 const map = ref(null);
 const drawnItems = ref(new L.FeatureGroup());
 const searchQuery = ref('');
-const devices = ref([]);
+const geozones = ref([]);
 const filteredResults = ref([]);
-const selectedDevice = ref(null);
-const deviceShapes = ref({});
+const selectedGeozone = ref(null); // Cambiado a selectedGeozone
+const geozoneShapes = ref({}); // Cambiado a geozoneShapes
 const dropdownOpen = ref(false);
 
 const fullText = "Navify";
@@ -77,11 +77,11 @@ let currentIndex = 0;
 let isDeleting = false;
 let typingInterval;
 let routingControl = null;
-let deviceMarker = null;
+let geozoneMarker = null; // Cambiado a geozoneMarker
 let coordinates = null;
 
-const showDeviceModal = ref(false);
-const selectedDevices = ref([]);
+const showGeozoneModal = ref(false); // Cambiado a showGeozoneModal
+const selectedGeozones = ref([]); // Cambiado a selectedGeozones
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -142,30 +142,68 @@ const initMap = () => {
       createZone: true,
     });
 
-    map.value.on('pm:create', (e) => {
+    map.value.on('pm:create', async (e) => {
       const layer = e.layer;
       drawnItems.value.addLayer(layer);
 
-      console.log('Dispositivos disponibles:', devices.value);
+      console.log('Geozonas disponibles:', geozones.value);
 
-      const inputOptions = devices.value.reduce((options, device) => {
-        if (device.id && device.deviceName) {
-          options[device.id] = device.deviceName;
+      const inputOptions = geozones.value.reduce((options, geozone) => {
+        if (geozone.id && geozone.name) {
+          options[geozone.id] = geozone.name;
         }
         return options;
       }, {});
       openModal();
 
-     
+      let geozoneData;
+
       if (layer instanceof L.Circle) {
         coordinates = {
           center: layer.getLatLng(),
           radius: layer.getRadius()
         };
         console.log('Circunferencia creada - Centro:', coordinates.center, 'Radio:', coordinates.radius);
+
+        geozoneData = {
+          name: 'Geozona Circular', // Puedes cambiar esto según sea necesario
+          type: 'Circle',
+          center: {
+            lat: coordinates.center.lat,
+            lng: coordinates.center.lng
+          },
+          radius: coordinates.radius
+        };
       } else {
         coordinates = layer.getLatLngs();
         console.log('Coordenadas de la geozona creada:', coordinates);
+
+        geozoneData = {
+          name: 'Geozona Poligonal', // Puedes cambiar esto según sea necesario
+          type: 'Polygon',
+          vertices: coordinates[0].map(latlng => ({
+            lat: latlng.lat,
+            lng: latlng.lng
+          }))
+        };
+      }
+
+      // Hacer el POST al endpoint para guardar la geozona en la base de datos
+      try {
+        const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
+        console.log('Geozona guardada:', response.data);
+        Swal.fire({
+          title: 'Geozona guardada',
+          text: 'La geozona ha sido guardada exitosamente.',
+          icon: 'success'
+        });
+      } catch (error) {
+        console.error('Error al guardar la geozona:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'Hubo un error al guardar la geozona.',
+          icon: 'error'
+        });
       }
     });
 
@@ -175,201 +213,149 @@ const initMap = () => {
   }
 };
 
-const storeShape = (layer, deviceId) => {
-  if (!deviceShapes.value[deviceId]) {
-    deviceShapes.value[deviceId] = [];
+const storeShape = (layer, geozoneId) => {
+  if (!geozoneShapes.value[geozoneId]) {
+    geozoneShapes.value[geozoneId] = [];
   }
-  deviceShapes.value[deviceId].push(layer);
+  geozoneShapes.value[geozoneId].push(layer);
 };
 
-const showDeviceOnMap = (device) => {
+const showGeozoneOnMap = (geozone) => {
   if (!map.value) {
     console.error('El mapa no está inicializado');
     return;
   }
 
-  if (deviceMarker) {
-    map.value.removeLayer(deviceMarker);
+  // Limpiar las capas existentes
+  drawnItems.value.clearLayers();
+
+  let layer;
+  if (geozone.type === 'Circle') {
+    const center = L.latLng(geozone.center.lat, geozone.center.lng);
+    layer = L.circle(center, { radius: geozone.radius }).addTo(map.value);
+    map.value.setView(center, 15);
+  } else if (geozone.type === 'Polygon') {
+    const vertices = geozone.vertices.map(vertex => [vertex.lat, vertex.lng]);
+    layer = L.polygon(vertices).addTo(map.value);
+    map.value.fitBounds(layer.getBounds());
   }
 
-  map.value.setView([device.coordenadas.latitud, device.coordenadas.longitud], 15);
-
-  deviceMarker = L.marker([device.coordenadas.latitud, device.coordenadas.longitud]).addTo(map.value);
-  deviceMarker.bindPopup(`
-    <b>${device.deviceName}</b><br>
-    Latitud: ${device.coordenadas.latitud}<br>
-    Longitud: ${device.coordenadas.longitud}<br>
-  `).openPopup();
-
-  map.value.invalidateSize();
+  drawnItems.value.addLayer(layer);
 };
 
-const selectDevice = (device) => {
+const selectGeozone = (geozone) => {
   if (!coordinates) {
     Swal.fire({
       icon: 'warning',
       title: 'Geozona no creada',
-      text: 'Primero debes crear la geozona antes de seleccionar un dispositivo.',
+      text: 'Primero debes crear la geozona antes de seleccionarla.',
     });
     return;
   }
 
-  selectedDevice.value = device;
+  selectedGeozone.value = geozone;
 
-  if (deviceShapes.value[device.id]) {
-    deviceShapes.value[device.id].forEach(layer => {
+  if (geozoneShapes.value[geozone.id]) {
+    geozoneShapes.value[geozone.id].forEach(layer => {
       drawnItems.value.addLayer(layer);
     });
   } else {
-    showDeviceOnMap(device);
+    showGeozoneOnMap(geozone);
   }
 };
 
 const deleteLastShape = () => {
-  if (!selectedDevice.value || !deviceShapes.value[selectedDevice.value.id]) {
+  if (!selectedGeozone.value || !geozoneShapes.value[selectedGeozone.value.id]) {
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'No hay formas asociadas a este dispositivo.',
+      text: 'No hay formas asociadas a esta geozona.',
     });
     return;
   }
 
-  const shapesForDevice = deviceShapes.value[selectedDevice.value.id];
-  if (shapesForDevice.length === 0) {
+  const shapesForGeozone = geozoneShapes.value[selectedGeozone.value.id];
+  if (shapesForGeozone.length === 0) {
     Swal.fire({
       icon: 'info',
       title: 'Sin Geozonas',
-      text: 'Este dispositivo no tiene geozonas creadas.',
+      text: 'Esta geozona no tiene formas creadas.',
     });
     return;
   }
 
-  const lastShape = shapesForDevice.pop();
+  const lastShape = shapesForGeozone.pop();
   if (lastShape) {
     map.value.removeLayer(lastShape);
     Swal.fire({
       icon: 'success',
       title: 'Geozona Eliminada',
-      text: 'La última geozona creada ha sido eliminada.',
+      text: 'La última forma creada ha sido eliminada.',
     });
   }
 };
 
 const filterResults = () => {
   const query = searchQuery.value.toLowerCase();
-  filteredResults.value = devices.value.filter(item => {
-    const hasGeozona = deviceShapes.value[item.id] && deviceShapes.value[item.id].length > 0;
-    return !hasGeozona && item.deviceName.toLowerCase().includes(query);
+  filteredResults.value = geozones.value.filter(item => {
+    return item.name.toLowerCase().includes(query);
   });
 };
 
-const cargarDispositivos = async () => {
+const cargarGeozonas = async () => {
   try {
-    const response = await fetch('http://3.12.147.103/devices');
+    const response = await fetch('http://3.12.147.103/geozone/geozones');
     if (!response.ok) {
       throw new Error('Error en la respuesta de la API');
     }
     const data = await response.json();
-    devices.value = data;
-    console.log('Dispositivos cargados:', devices.value);
-    filteredResults.value = devices.value;
+    geozones.value = data;
+    console.log('Geozonas cargadas:', geozones.value);
+    filteredResults.value = geozones.value;
   } catch (error) {
-    console.error('Error al cargar dispositivos:', error);
+    console.error('Error al cargar geozonas:', error);
   }
-};
-
-import PuntoA from '../assets/puntoA.png';
-
-const generateRoute = () => {
-  if (!map.value) {
-    console.error('El mapa no está inicializado');
-    return;
-  }
-
-  const pointA = L.latLng(10.950751, -74.771095);
-  const pointB = L.latLng(10.942815, -74.781778);
-
-  if (routingControl) {
-    map.value.removeControl(routingControl);
-  }
-
-  routingControl = L.Routing.control({
-    waypoints: [pointA, pointB],
-    routeWhileDragging: true,
-    lineOptions: {
-      styles: [{ color: 'rgb(133, 76, 214)', opacity: 1, weight: 5 }]
-    },
-    createMarker: function (i, waypoint, n) {
-      return L.marker(waypoint.latLng, {
-        draggable: true,
-        icon: L.icon({
-          iconUrl: PuntoA,
-          iconSize: [35, 35],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        })
-      }).bindPopup(`Punto ${i + 1}`);
-    },
-    formatter: new L.Routing.Formatter({
-      language: 'es',
-      units: 'metric',
-      roundingSensitivity: 1000
-    }),
-    show: false
-  }).addTo(map.value);
-
-  routingControl.on('routesfound', function() {
-    const container = document.querySelector('.leaflet-routing-container');
-    if (container) {
-      container.classList.add('custom-routing-container');
-      container.style.maxHeight = '400px';
-      container.style.overflowY = 'auto';
-      container.style.scrollbarColor = 'var(--text-color) var(--sidebar-color)';
-    }
-  });
 };
 
 const openModal = () => {
-  showDeviceModal.value = true;
+  showGeozoneModal.value = true;
 };
 
 const closeModal = () => {
-  showDeviceModal.value = false;
+  showGeozoneModal.value = false;
 };
 
-const toggleDeviceSelection = (device) => {
-  const index = selectedDevices.value.indexOf(device);
+const toggleGeozoneSelection = (geozone) => {
+  const index = selectedGeozones.value.indexOf(geozone);
   if (index > -1) {
-    // Si el dispositivo ya está seleccionado, lo eliminamos
-    selectedDevices.value.splice(index, 1);
+    // Si la geozona ya está seleccionada, la eliminamos
+    selectedGeozones.value.splice(index, 1);
   } else {
-    // Si no está seleccionado, lo agregamos
-    selectedDevices.value.push(device);
+    // Si no está seleccionada, la agregamos
+    selectedGeozones.value.push(geozone);
   }
 };
 
 const confirmCreateGeozona = () => {
-  if (selectedDevices.value.length === 0) {
+  if (selectedGeozones.value.length === 0) {
     Swal.fire({
       icon: 'warning',
       title: 'Sin selección',
-      text: 'Por favor, selecciona al menos un dispositivo para crear la geozona.',
+      text: 'Por favor, selecciona al menos una geozona para crearla.',
     });
     return;
   }
 
   Swal.fire({
     title: '¿Estás seguro?',
-    text: "¿Deseas crear la geozona para los dispositivos seleccionados?",
+    text: "¿Deseas crear la geozona para las geozonas seleccionadas?",
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Sí, crear',
     cancelButtonText: 'No, cancelar'
   }).then((result) => {
     if (result.isConfirmed) {
-      console.log('Creando geozona para los dispositivos:', selectedDevices.value);
+      console.log('Creando geozona para las geozonas:', selectedGeozones.value);
       
       Swal.fire({
         title: 'Geozona creada',
@@ -386,7 +372,7 @@ const confirmCreateGeozona = () => {
 };
 
 onMounted(() => {
-  cargarDispositivos();
+  cargarGeozonas();
   initMap();
   typeEffect();
 });
@@ -398,8 +384,6 @@ onUnmounted(() => {
   }
 });
 </script>
-
-
 <style scoped>
 .home {
   height: 100vh;
