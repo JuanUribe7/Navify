@@ -473,7 +473,7 @@ onMounted(() => {
 .hone2 h1 {
   text-align: center;
   margin-top: 10px;
-  font-size: px;
+  font-size: 14px;
   color: var(--text-color);
 }
 
