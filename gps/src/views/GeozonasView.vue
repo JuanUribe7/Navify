@@ -331,7 +331,7 @@ const toggleGeozoneSelection = (geozone) => {
     // Si la geozona ya está seleccionada, la eliminamos
     selectedGeozones.value.splice(index, 1);
   } else {
-    // Si no está seleccionada, la agregamos
+    // Si no está seleccionada, la agregamos.
     selectedGeozones.value.push(geozone);
   }
 };
