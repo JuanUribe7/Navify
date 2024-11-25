@@ -89,7 +89,7 @@ const cargarNotificaciones = async () => {
         // Ordenar las notificaciones por fecha en orden descendente
         notifications.value.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
 
-        // Mostrar alerta si hay una alerta en la respuesta¿
+        // Mostrar alerta si hay una alerta en la respuesta
     } catch (error) {
         console.error('Error al cargar notificaciones:', error);
     }

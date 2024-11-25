@@ -4,7 +4,7 @@ import router from './router';
 import store from './store';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-
+import gasolinaImage from './assets/gasolina.png'; // Importa la imagen
 // Configurar WebSocket
 const ws = new WebSocket('ws://3.12.147.103');
 ws.onmessage = (event) => {
@@ -13,6 +13,7 @@ ws.onmessage = (event) => {
         title: 'Notificación',
         message: notificacion.notificationName || 'Nueva notificación',
         position: 'bottomRight',
+        image: gasolinaImage,
         timeout: 5000 // Mostrar la alerta durante 5 segundos
     });
 };
