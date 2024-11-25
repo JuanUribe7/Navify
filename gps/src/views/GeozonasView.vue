@@ -80,7 +80,7 @@ let routingControl = null;
 let geozoneMarker = null; // Cambiado a geozoneMarker
 let coordinates = null;
 
-const showGeozoneModal = ref(false); // Cambiado a showGeozoneModal
+const showDeviceModal = ref(false); 
 const selectedGeozones = ref([]); // Cambiado a selectedGeozones
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -318,11 +318,11 @@ const cargarGeozonas = async () => {
 };
 
 const openModal = () => {
-  showGeozoneModal.value = true;
+  showDeviceModal.value = true;
 };
 
 const closeModal = () => {
-  showGeozoneModal.value = false;
+  showDeviceModal.value = false;
 };
 
 const toggleGeozoneSelection = (geozone) => {
