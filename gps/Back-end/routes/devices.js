@@ -133,8 +133,8 @@ router.post('/', async (req, res) => {
             responsible,
             imei,
             phoneNumber,
-            routeName: 'Geozona no asignada', 
-            geozoneName: 'Ruta no asignada' 
+            routeName: 'Ruta no asignada', 
+            geozoneName:  'Geozona no asignada' 
         });
 
         const dispositivoGuardado = await nuevoDispositivo.save();
