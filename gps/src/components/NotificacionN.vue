@@ -255,6 +255,7 @@ onMounted(() => {
     text-decoration: none;
     border-radius: 8px;
     transition: all 0.2s ease;
+    
 }
 
 .menu-item:hover {
@@ -274,6 +275,8 @@ onMounted(() => {
     margin: 0;
 }
 
+
+
 .notification-item {
     display: flex;
     align-items: center;
@@ -282,9 +285,9 @@ onMounted(() => {
     margin-bottom: 8px;
     background: var(--body-color);
     border-radius: 16px;
+    border: 1px solid var(--text-color);
     transition: all 0.3s ease;
     animation: slideIn 0.5s ease forwards;
-    border: 1px solid #f0f0f0;
 }
 
 .notification-item:hover {
@@ -292,19 +295,19 @@ onMounted(() => {
 }
 
 .notification-item.unread {
-    background: #f8faff;
-    border-color: #e5edff;
+    background: var(--body-color);
+    border-color: var(--text-color);
 }
 
 .notification-icon {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #eef2ff;
+    background: var(--body-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4a7bff;
+    color: var(--text-color);
     font-size: 20px;
 }
 
@@ -313,13 +316,13 @@ onMounted(() => {
 }
 
 .notification-text {
-    color: #1a1a1a;
+    color: var(--text-color);
     font-size: 14px;
     margin-bottom: 4px;
 }
 
 .notification-time {
-    color: #999;
+    color: var(--text-color);
     font-size: 12px;
 }
 
@@ -329,7 +332,7 @@ onMounted(() => {
     border-radius: 50%;
     border: none;
     background: transparent;
-    color: #999;
+    color: var(--text-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -343,8 +346,8 @@ onMounted(() => {
 }
 
 .notification-action:hover {
-    background: #eef2ff;
-    color: #4a7bff;
+    background: var(--body-color);
+    color: var(--text-color);
 }
 
 /* Animaciones */

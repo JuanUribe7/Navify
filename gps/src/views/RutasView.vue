@@ -33,6 +33,14 @@
         </div>
       </div>
     </div>
+    <div class="modal" v-if="showModal" @click.self="closeModal">
+      <div class="modal-content">
+        <span class="close" @click="closeModal">&times;</span>
+        <h2>Guardar Ruta</h2>
+        <input v-model="routeName" placeholder="Nombre de la ruta" class="inputt" @keyup.enter="saveRoute" />
+        <button @click="saveRoute">Guardar Ruta</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -55,6 +63,8 @@ let routeControl = null;
 const searchQuery = ref('');
 const routes = ref([]);
 const filteredResults = ref([]);
+const routeName = ref('');
+const showModal = ref(false);
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -65,13 +75,13 @@ L.Icon.Default.mergeOptions({
 
 onMounted(() => {
   cargarRutas();
-  map = L.map('map').setView([10.9685, -74.7813], 20);
+  map = L.map('map').setView([10.9685, -74.7813], 16);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
-  map.on('click', function(e) {
+  map.on('click', function (e) {
     const latlng = e.latlng;
     waypoints.push(latlng);
     L.marker(latlng).addTo(map);
@@ -82,7 +92,7 @@ onMounted(() => {
       }
       routeControl = L.Routing.control({
         waypoints: waypoints,
-        createMarker: function() { return null; },
+        createMarker: function () { return null; },
         routeWhileDragging: true,
         geocoder: L.Control.Geocoder.nominatim()
       }).addTo(map);
@@ -91,47 +101,20 @@ onMounted(() => {
 
   const saveRouteButton = document.getElementById('saveRoute');
   if (saveRouteButton) {
-    saveRouteButton.addEventListener('click', async function() {
-      if (waypoints.length > 1) {
-        const route = waypoints.map(point => ({ lat: point.lat, lng: point.lng }));
-        try {
-          const response = await axios.post('http://3.12.147.103/routes/save-route', { name: 'Mi Ruta', waypoints: route });
-          console.log('Ruta guardada:', response.data);
-          alert('Ruta guardada');
-          cargarRutas();
-        } catch (error) {
-          console.error('Error al guardar la ruta:', error.message);
-          if (error.response) {
-            // El servidor respondió con un código de estado fuera del rango 2xx
-            console.error('Error data:', error.response.data);
-            console.error('Error status:', error.response.status);
-            console.error('Error headers:', error.response.headers);
-            alert(`Error al guardar la ruta: ${error.response.data.error}`);
-          } else if (error.request) {
-            // La solicitud fue hecha pero no se recibió respuesta
-            console.error('Error request:', error.request);
-            alert('Error al guardar la ruta: No se recibió respuesta del servidor.');
-          } else {
-            // Algo pasó al configurar la solicitud
-            console.error('Error message:', error.message);
-            alert(`Error al guardar la ruta: ${error.message}`);
-          }
-        }
-      } else {
-        alert('Agrega al menos dos puntos para crear una ruta.');
-      }
+    saveRouteButton.addEventListener('click', function () {
+      showModal.value = true;
     });
   }
 
   const clearRouteButton = document.getElementById('clearRoute');
   if (clearRouteButton) {
-    clearRouteButton.addEventListener('click', function() {
+    clearRouteButton.addEventListener('click', function () {
       waypoints = [];
       if (routeControl) {
         map.removeControl(routeControl);
         routeControl = null;
       }
-      map.eachLayer(function(layer) {
+      map.eachLayer(function (layer) {
         if (layer instanceof L.Marker) {
           map.removeLayer(layer);
         }
@@ -173,7 +156,7 @@ const selectRoute = async (route) => {
     }
     routeControl = L.Routing.control({
       waypoints: waypoints,
-      createMarker: function() { return null; },
+      createMarker: function () { return null; },
       routeWhileDragging: true,
       geocoder: L.Control.Geocoder.nominatim()
     }).addTo(map);
@@ -204,7 +187,7 @@ const loadRoute = async () => {
     }
     routeControl = L.Routing.control({
       waypoints: waypoints,
-      createMarker: function() { return null; },
+      createMarker: function () { return null; },
       routeWhileDragging: true,
       geocoder: L.Control.Geocoder.nominatim()
     }).addTo(map);
@@ -224,18 +207,61 @@ const loadRoute = async () => {
     }
   }
 };
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const saveRoute = async () => {
+  if (waypoints.length > 1) {
+    const route = waypoints.map(point => ({ lat: point.lat, lng: point.lng }));
+    try {
+      const response = await axios.post('http://3.12.147.103/routes/save-route', { name: routeName.value, waypoints: route });
+      console.log('Ruta guardada:', response.data);
+      alert('Ruta guardada');
+      cargarRutas();
+      routeName.value = '';
+      closeModal();
+      waypoints = [];
+      map.eachLayer(function (layer) {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
+        }
+      });
+    } catch (error) {
+      console.error('Error al guardar la ruta:', error.message);
+      if (error.response) {
+        // El servidor respondió con un código de estado fuera del rango 2xx
+        console.error('Error data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+        alert(`Error al guardar la ruta: ${error.response.data.error}`);
+      } else if (error.request) {
+        // La solicitud fue hecha pero no se recibió respuesta
+        console.error('Error request:', error.request);
+        alert('Error al guardar la ruta: No se recibió respuesta del servidor.');
+      } else {
+        // Algo pasó al configurar la solicitud
+        console.error('Error message:', error.message);
+        alert(`Error al guardar la ruta: ${error.message}`);
+      }
+    }
+  } else {
+    alert('Primero debes crear la ruta antes de guardarla.');
+  }
+};
 </script>
 
 <style scoped>
 .map-container {
   height: calc(100vh - 60px);
-  width: 100%; 
-  z-index: 0; 
+  width: 100%;
+  z-index: 0;
 }
 
 .home {
   height: 100vh;
-  overflow: hidden; 
+  overflow: hidden;
   position: relative;
 }
 
@@ -265,6 +291,7 @@ const loadRoute = async () => {
   cursor: pointer;
   border-radius: 12px;
 }
+
 .home {
   height: 100vh;
   overflow: hidden;
@@ -432,6 +459,29 @@ const loadRoute = async () => {
   top: -400px;
 }
 
+.hone {
+  margin-left: 30px;
+  width: 17%;
+  background-color: var(--sidebar-color);
+  height: 280px;
+  position: absolute;
+  top: 35%;
+  z-index: 2;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid;
+}
+
+.hone h1 {
+  margin-top: 10px;
+  font-size: 16px;
+  text-align: center;
+  color: var(--text-color);
+
+}
+
 .hone2 {
   margin-left: 30px;
   background-color: var(--sidebar-color);
@@ -447,29 +497,7 @@ const loadRoute = async () => {
 .hone2 h1 {
   text-align: center;
   margin-top: 10px;
-  font-size: 15px;
-  color: var(--text-color);
-}
-
-.hone {
-  margin-left: 30px;
-  width: 17%;
-  background-color: var(--sidebar-color);
-  height: 280px;
-  position: absolute;
-  top: 30%;
-  z-index: 2;
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid;
-}
-
-.hone h1 {
-  margin-top: 10px;
-  font-size: 16px;
-  text-align: center;
+  font-size: 14px;
   color: var(--text-color);
 }
 
@@ -566,7 +594,7 @@ const loadRoute = async () => {
   border-radius: 3px;
 }
 
-.generate-route-btn{
+.generate-route-btn {
   padding: 4px;
   border-radius: 5px;
   border: 1px solid var(--text-color);
@@ -600,91 +628,166 @@ const loadRoute = async () => {
   background-color: #666;
 }
 
+/* Fondo del modal con efecto de desenfoque */
 .modal {
-  display: flex;
   position: fixed;
-  z-index: 1000;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
+/* Contenido del modal */
 .modal-content {
-  background-color: white;
-  margin: 15% auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 80%;
-  max-width: 500px;
-  animation: fadeIn 0.3s;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  animation: slideIn 0.3s ease;
 }
 
+/* Título del modal */
+.modal-content h2 {
+  color: #2d3436;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Botón de cerrar */
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: #a0aec0;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: #f7fafc;
+}
+
+.close:hover {
+  background: #edf2f7;
+  color: #4a5568;
+  transform: rotate(90deg);
+}
+
+/* Input personalizado */
+.inputt {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #edf2f7;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  margin-bottom: 1.5rem;
+  outline: none;
+}
+
+.inputt:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.inputt::placeholder {
+  color: #a0aec0;
+}
+
+/* Botón de guardar */
+.modal-content button {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+}
+
+.modal-content button:active {
+  transform: translateY(0);
+}
+
+/* Animaciones */
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
   from {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
+/* Animación de salida */
+.modal.closing {
+  animation: fadeOut 0.3s ease forwards;
 }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
+.modal.closing .modal-content {
+  animation: slideOut 0.3s ease forwards;
 }
 
-.device-list-modal {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 300px;
-  overflow-y: auto;
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
-.device-item {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin: 5px 0;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-.device-item:hover {
-  background-color: #f0f0f0;
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
-
-.create-button {
-  background-color: #4CAF50; /* Verde */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-top: 10px;
-  transition: background-color 0.3s;
-}
-
-.create-button:hover {
-  background-color: #45a049; /* Verde más oscuro */
-}
-
 </style>
