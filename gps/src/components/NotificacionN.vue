@@ -144,7 +144,7 @@ onMounted(() => {
     transform: translate(-50%, -50%);
     width: 380px;
     height: 600px;
-    background: #ffffff;
+    background: var(--body-color);
     border-radius: 24px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     display: flex;
@@ -160,7 +160,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f0f0f0;
-    background: #ffffff;
+    background: var(--body-color);
 }
 
 .header-content {
@@ -172,7 +172,7 @@ onMounted(() => {
 .title {
     font-size: 20px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-color);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -180,12 +180,12 @@ onMounted(() => {
 
 .title i {
     font-size: 24px;
-    color: #4a7bff;
+    color: var(--text-color);
 }
 
 .unread-count {
-    background: #4a7bff;
-    color: white;
+    background: var(--text-color);
+    color: var(--body-color);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 12px;
@@ -202,17 +202,17 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--text-color);
     transition: all 0.3s ease;
 }
 
 .menu-button:hover {
-    background: #f5f5f5;
+    background: var(--body-color);
 }
 
 .menu-button.active {
-    color: #4a7bff;
-    background: #eef2ff;
+    color: var(--text-color);
+    background: var(--body-color);
 }
 
 .menu-overlay {
@@ -228,7 +228,7 @@ onMounted(() => {
     top: 80px;
     right: 24px;
     width: 200px;
-    background: white;
+    background: var(--body-color);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     z-index: 101;
@@ -238,7 +238,7 @@ onMounted(() => {
 .menu-header {
     padding: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-color);
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -251,15 +251,15 @@ onMounted(() => {
     align-items: center;
     gap: 12px;
     padding: 12px;
-    color: #666;
+    color: var(--text-color);
     text-decoration: none;
     border-radius: 8px;
     transition: all 0.2s ease;
 }
 
 .menu-item:hover {
-    background: #f5f5f5;
-    color: #4a7bff;
+    background: var(--body-color);
+    color: var(--text-color);
 }
 
 .notifications-wrapper {
@@ -280,7 +280,7 @@ onMounted(() => {
     gap: 16px;
     padding: 16px;
     margin-bottom: 8px;
-    background: white;
+    background: var(--body-color);
     border-radius: 16px;
     transition: all 0.3s ease;
     animation: slideIn 0.5s ease forwards;

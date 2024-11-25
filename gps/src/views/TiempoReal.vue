@@ -8,7 +8,8 @@
         <div class="group">
           <svg class="icon" aria-hidden="true" viewBox="0 0 24 24">
             <g>
-              <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
+              <path
+                d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z">
               </path>
             </g>
           </svg>
@@ -33,13 +34,15 @@
 
     <div class="cuadro">
       <div class="control-container">
-        <p>Dispositivo: {{ deviceName }}</p><br>
-        <p>Tiempo: {{ fixTimeDOM }}</p><br>
-        <p>Velocidad: {{ speedDOM }} km/h</p><br>
-        <p>Encendido: {{ ignitionDOM }}</p><br>
-        <p>Cargando: {{ chargingDOM }}</p><br>
-        <button @click="sendCommand(0)">Apagar Carro</button>
-        <button @click="sendCommand(1)">Encender Carro</button>
+        <p>Dispositivo: <span>{{ deviceName }}</span></p>
+        <p>Tiempo: <span>{{ fixTimeDOM }}</span></p>
+        <p>Velocidad: <span>{{ speedDOM }} km/h</span></p>
+        <p>Encendido: <span>{{ ignitionDOM }}</span></p>
+        <p>Cargando: <span>{{ chargingDOM }}</span></p>
+        <div class="button-container">
+          <button @click="sendCommand(0)">Apagar</button>
+          <button @click="sendCommand(1)">Encender</button>
+        </div>
       </div>
     </div>
   </section>
@@ -86,7 +89,7 @@ let trackingIntervalId = null
 // Crea el efecto de escritura para el título
 const typeEffect = () => {
   const current = currentIndex;
-  
+
   if (!isDeleting && current < fullText.length) {
     displayedText.value = fullText.slice(0, current + 1);
     currentIndex++;
@@ -115,9 +118,9 @@ function initMap() {
   const mapOptions = {
     center: colombia,
     zoom: 12.4
-    
+
   };
-  
+
   // Crear el objeto de mapa de Leaflet
   map = L.map('map').setView([colombia.lat, colombia.lng], mapOptions.zoom);
 
@@ -144,7 +147,7 @@ function filterResults() {
 // Muestra un dispositivo seleccionado en el mapa
 async function showDeviceOnMap(device) {
   console.log('Mostrando dispositivo:', device);
-  
+
   if (!map) {
     console.error('El mapa no está inicializado');
     return;
@@ -296,14 +299,14 @@ onMounted(() => {
 /* Estilos del mapa */
 .map-container {
   height: calc(100vh - 60px);
-  width: 100%; 
-  z-index: 0; 
+  width: 100%;
+  z-index: 0;
 }
 
 /* Estilos generales */
 .home {
-  height: 100vh; 
-  overflow: hidden; 
+  height: 100vh;
+  overflow: hidden;
   position: relative;
 }
 
@@ -311,9 +314,10 @@ onMounted(() => {
 .home .navar {
   background-color: var(--sidebar-color);
   border-bottom: 3px solid var(--body-color);
-  z-index: 2; 
- 
+  z-index: 2;
+
 }
+
 .home .text {
   position: relative;
   z-index: 2;
@@ -351,7 +355,8 @@ onMounted(() => {
 
 .titulo {
   display: inline-block;
-  min-width: 100px; /* Ajusta según sea necesario */
+  min-width: 100px;
+  /* Ajusta según sea necesario */
 }
 
 .dropdown {
@@ -375,7 +380,7 @@ onMounted(() => {
 
 .dropbtn:hover {
   background-color: var(--body-color);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-content {
@@ -384,7 +389,7 @@ onMounted(() => {
   margin-right: 30px;
   background-color: var(--sidebar-color);
   min-width: 200px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   z-index: 3;
   border-radius: 8px;
   overflow: hidden;
@@ -437,7 +442,7 @@ onMounted(() => {
   height: 280px;
   position: absolute;
   top: 35%;
-  z-index: 2; 
+  z-index: 2;
   border-radius: 10px;
   padding: 10px;
   display: flex;
@@ -459,7 +464,7 @@ onMounted(() => {
   height: 50px;
   position: absolute;
   top: 25%;
-  z-index: 2; 
+  z-index: 2;
   border-radius: 10px;
   padding: 5px 15px;
   border: 1px solid;
@@ -507,7 +512,7 @@ onMounted(() => {
   width: 1rem;
   height: 1rem;
   font-size: 21px;
-  
+
 }
 
 .device-list-container {
@@ -558,39 +563,119 @@ onMounted(() => {
 }
 
 .cuadro {
+  background: var(--body-color);
+  max-width: 320px;
+  margin: 1rem auto;
+  border-radius: 16px;
+  box-shadow: rgba(17, 12, 46, 0.05) 0px 48px 100px 0px;
+  overflow: hidden;
   position: fixed;
   top: 0;
   right: 0;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
   display: none;
-  
+  margin: 4rem 20px;
 }
 
-.cuadro .control-container {
-  margin: 5rem 20px;
-  background-color: white;
-  z-index: 3;
-  height: 300px;
-  width: 280px;
-  border: 3px solid;
-  border-radius: 10px;
+.control-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título del dashboard */
+.control-container::before {
+  content: "Panel de Control";
+  background: var(--body-color);
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 1px solid #edf2f7;
+}
+
+/* Estilos para los párrafos de información */
+.control-container p {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.control-container p:hover {
+  background-color: var(--body-color);
+}
+
+/* Valores específicos con estilos personalizados */
+.control-container p span {
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: var(--body-color);
+  color: var(--text-color);
+}
+
+.button-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(to bottom, var(--body-color), var(--body-color));
+}
+
+button {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.70rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+button:first-child { 
+  background-color: #fff;
+  color: #e53e3e;
+  border: 1px solid #e53e3e;
+}
+
+button:first-child:hover {
+  background-color: #e53e3e;
+  color: white;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.2);
+}
+
+/* Botón de encendido */
+button:last-child {
+  background-color: #fff;
+  color: #38a169;
+  border: 1px solid #38a169;
+}
+
+button:last-child:hover {
+  background-color: #38a169;
+  color: white;
+  box-shadow: 0 2px 8px rgba(56, 161, 105, 0.2);
+}
+
+@keyframes valueChange {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
