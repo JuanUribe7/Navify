@@ -20,7 +20,7 @@
         </div>
         <div class="device-list-container">
           <ul class="device-list">
-            <li @click="selectedGeozone(item)" v-for="item in filteredResults" :key="item._id">
+            <li @click="selectGeozone(item)" v-for="item in filteredResults" :key="item._id">
               <i class='bx bxs-car'></i>
               {{ item.name }}
             </li>
@@ -30,11 +30,18 @@
 
       <div id="map" class="map-container"></div>
     </div>
-
+    <div class="modal" v-if="showModal" @click.self="closeModal">
+      <div class="modal-content">
+        <span class="close" @click="closeModal">&times;</span>
+        <h2>Guardar Geozona</h2>
+        <input v-model="geozoneName" placeholder="Nombre de la geozona" class="inputt" @keyup.enter="saveGeozone" />
+        <button @click="saveGeozone">Guardar Geozona</button>
+      </div>
+    </div>
     <!-- Modal para seleccionar dispositivo -->
     <div v-if="showDeviceModal" class="modal">
       <div class="modal-content">
-        <span class="close" @click="closeModal">&times;</span>
+        <span class="close" @click="closeDeviceModal">&times;</span>
         <h2>Seleccionar Dispositivo</h2>
         <ul class="device-list-modal">
           <li v-for="device in devices" :key="device.id" class="device-item">
@@ -81,7 +88,9 @@ let routingControl = null;
 let geozoneMarker = null;
 let coordinates = null;
 
+const showModal = ref(false);
 const showDeviceModal = ref(false);
+const geozoneName = ref('');
 const selectedDevices = ref([]);
 const devices = ref([]); // Variable reactiva para almacenar los dispositivos
 
@@ -144,20 +153,9 @@ const initMap = () => {
       createZone: true,
     });
 
-    map.value.on('pm:create', async (e) => {
+    map.value.on('pm:create', (e) => {
       const layer = e.layer;
       drawnItems.value.addLayer(layer);
-
-      console.log('Geozonas disponibles:', geozones.value);
-
-      const inputOptions = geozones.value.reduce((options, geozone) => {
-        if (geozone.id && geozone.name) {
-          options[geozone.id] = geozone.name;
-        }
-        return options;
-      }, {});
-
-      let geozoneData;
 
       if (layer instanceof L.Circle) {
         coordinates = {
@@ -165,53 +163,12 @@ const initMap = () => {
           radius: layer.getRadius()
         };
         console.log('Circunferencia creada - Centro:', coordinates.center, 'Radio:', coordinates.radius);
-
-        geozoneData = {
-          name: 'Geozona Circular', // Puedes cambiar esto según sea necesario
-          type: 'Circle',
-          center: {
-            lat: coordinates.center.lat,
-            lng: coordinates.center.lng
-          },
-          radius: coordinates.radius
-        };
       } else {
         coordinates = layer.getLatLngs();
         console.log('Coordenadas de la geozona creada:', coordinates);
-
-        geozoneData = {
-          name: 'Geozona Poligonal', // Puedes cambiar esto según sea necesario
-          type: 'Polygon',
-          vertices: coordinates[0].map(latlng => ({
-            lat: latlng.lat,
-            lng: latlng.lng
-          }))
-        };
       }
 
-      // Imprimir geozoneData antes de enviar
-      console.log('Datos de la geozona a enviar:', geozoneData);
-
-      // Guardar la geozona en la base de datos y abrir el modal de dispositivos
-      try {
-        const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
-        console.log('Geozona guardada:', response.data);
-        selectedGeozone.value = response.data; // Almacenar la geozona creada en selectedGeozone
-        Swal.fire({
-          title: 'Geozona guardada',
-          text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
-          icon: 'success'
-        }).then(() => {
-          openModal(); // Abrir el modal de dispositivos
-        });
-      } catch (error) {
-        console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
-        Swal.fire({
-          title: 'Error',
-          text: `Hubo un error al crear la geozona: ${error.response ? JSON.stringify(error.response.data) : error.message}`,
-          icon: 'error'
-        });
-      }
+      showModal.value = true; // Mostrar el modal para guardar la geozona
     });
 
     map.value.on('pm:remove', (e) => {
@@ -334,6 +291,7 @@ const openModal = () => {
 };
 
 const closeModal = () => {
+  showModal.value = false;
   showDeviceModal.value = false;
 };
 
@@ -350,6 +308,53 @@ const toggleDeviceSelection = (device) => {
   console.log('Dispositivos seleccionados:', selectedDevices.value);
 };
 
+const saveGeozone = async () => {
+  let geozoneData;
+
+  if (coordinates.center) {
+    geozoneData = {
+      name: geozoneName.value,
+      type: 'Circle',
+      center: {
+        lat: coordinates.center.lat,
+        lng: coordinates.center.lng
+      },
+      radius: coordinates.radius
+    };
+  } else {
+    geozoneData = {
+      name: geozoneName.value,
+      type: 'Polygon',
+      vertices: coordinates[0].map(latlng => ({
+        lat: latlng.lat,
+        lng: latlng.lng
+      }))
+    };
+  }
+
+  // Guardar la geozona en la base de datos y abrir el modal de dispositivos
+  try {
+    const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
+    console.log('Geozona guardada:', response.data);
+    selectedGeozone.value = response.data; // Almacenar la geozona creada en selectedGeozone
+    Swal.fire({
+      title: 'Geozona guardada',
+      text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
+      icon: 'success'
+    }).then(() => {
+      showModal.value = false;
+      showDeviceModal.value = true; // Mostrar el modal de dispositivos
+    });
+  } catch (error) {
+    console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
+    Swal.fire({
+      title: 'Error',
+      text: `Hubo un error al crear la geozona: ${error.response ? JSON.stringify(error.response.data) : error.message}`,
+      icon: 'error'
+    });
+  }
+};
+
 const confirmCreateGeozona = async () => {
   if (selectedDevices.value.length === 0) {
     Swal.fire({
@@ -361,35 +366,32 @@ const confirmCreateGeozona = async () => {
   }
 
   try {
-  // Imprimir selectedGeozone para depuración
-  console.log('Geozona seleccionada:', selectedGeozone.value);
+    const imeis = selectedDevices.value.map(device => device.imei);
+    const geozoneData = {
+      name: selectedGeozone.value.name, // Solo enviar el nombre de la geozona
+      imeis: imeis
+    };
 
-  const imeis = selectedDevices.value.map(device => device.imei);
-  const geozoneData = {
-    name: selectedGeozone.value.name, // Solo enviar el nombre de la geozona
-    imeis: imeis
-  };
+    // Imprimir geozoneData antes de enviar
+    console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
 
-  // Imprimir geozoneData antes de enviar
-  console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
-
-  const response = await axios.put(`http://3.12.147.103/devices/geozones/${selectedGeozone.value._id}`, geozoneData);
-  console.log('Geozona y dispositivos asignados guardados:', response.data);
-  Swal.fire({
-    title: 'Geozona actualizada',
-    text: 'La geozona y los dispositivos han sido actualizados exitosamente.',
-    icon: 'success'
-  }).then(() => {
-    closeModal();
-  });
-} catch (error) {
-  console.error('Error al actualizar la geozona y los dispositivos:', error);
-  Swal.fire({
-    title: 'Error',
-    text: 'Hubo un error al actualizar la geozona y los dispositivos.',
-    icon: 'error'
-  });
-}
+    const response = await axios.put(`http://3.12.147.103/devices/geozones/${selectedGeozone.value._id}`, geozoneData);
+    console.log('Geozona y dispositivos asignados guardados:', response.data);
+    Swal.fire({
+      title: 'Geozona actualizada',
+      text: 'La geozona y los dispositivos han sido actualizados exitosamente.',
+      icon: 'success'
+    }).then(() => {
+      closeModal();
+    });
+  } catch (error) {
+    console.error('Error al actualizar la geozona y los dispositivos:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Hubo un error al actualizar la geozona y los dispositivos.',
+      icon: 'error'
+    });
+  }
 };
 
 onMounted(() => {

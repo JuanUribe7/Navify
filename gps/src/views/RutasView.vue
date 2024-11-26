@@ -41,6 +41,19 @@
         <button @click="saveRoute">Guardar Ruta</button>
       </div>
     </div>
+    <div v-if="showDeviceModal" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closeDeviceModal">&times;</span>
+        <h2>Seleccionar Dispositivo</h2>
+        <ul class="device-list-modal">
+          <li v-for="device in devices" :key="device.id" class="device-item">
+            <input type="checkbox" :checked="selectedDevices.includes(device)" @click.stop="toggleDeviceSelection(device)" />
+            {{ device.deviceName }}
+          </li>
+        </ul>
+        <button @click="confirmCreateGeozona" class="create-button">Crear Geozona</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -65,6 +78,9 @@ const routes = ref([]);
 const filteredResults = ref([]);
 const routeName = ref('');
 const showModal = ref(false);
+const showDeviceModal = ref(false);
+const devices = ref([]);
+const selectedDevices = ref([]);
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -75,6 +91,7 @@ L.Icon.Default.mergeOptions({
 
 onMounted(() => {
   cargarRutas();
+  cargarDispositivos();
   map = L.map('map').setView([10.9685, -74.7813], 16);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -138,6 +155,19 @@ const cargarRutas = async () => {
   }
 };
 
+const cargarDispositivos = async () => {
+  try {
+    const response = await fetch('http://3.12.147.103/devices');
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
+    }
+    const data = await response.json();
+    devices.value = data;
+  } catch (error) {
+    console.error('Error al cargar dispositivos:', error);
+  }
+};
+
 const filterResults = () => {
   const query = searchQuery.value.toLowerCase();
   filteredResults.value = routes.value.filter(route => {
@@ -177,39 +207,12 @@ const selectRoute = async (route) => {
   }
 };
 
-const loadRoute = async () => {
-  try {
-    const response = await axios.get('http://3.12.147.103/routes/get-route/ID_DE_LA_RUTA');
-    const route = response.data.waypoints;
-    waypoints = route.map(point => L.latLng(point.lat, point.lng));
-    if (routeControl) {
-      map.removeControl(routeControl);
-    }
-    routeControl = L.Routing.control({
-      waypoints: waypoints,
-      createMarker: function () { return null; },
-      routeWhileDragging: true,
-      geocoder: L.Control.Geocoder.nominatim()
-    }).addTo(map);
-  } catch (error) {
-    console.error('Error al cargar la ruta:', error.message);
-    if (error.response) {
-      console.error('Error data:', error.response.data);
-      console.error('Error status:', error.response.status);
-      console.error('Error headers:', error.response.headers);
-      alert(`Error al cargar la ruta: ${error.response.data.error}`);
-    } else if (error.request) {
-      console.error('Error request:', error.request);
-      alert('Error al cargar la ruta: No se recibió respuesta del servidor.');
-    } else {
-      console.error('Error message:', error.message);
-      alert(`Error al cargar la ruta: ${error.message}`);
-    }
-  }
-};
-
 const closeModal = () => {
   showModal.value = false;
+};
+
+const closeDeviceModal = () => {
+  showDeviceModal.value = false;
 };
 
 const saveRoute = async () => {
@@ -228,6 +231,7 @@ const saveRoute = async () => {
           map.removeLayer(layer);
         }
       });
+      showDeviceModal.value = true; // Mostrar el modal de selección de dispositivos
     } catch (error) {
       console.error('Error al guardar la ruta:', error.message);
       if (error.response) {
@@ -249,6 +253,21 @@ const saveRoute = async () => {
   } else {
     alert('Primero debes crear la ruta antes de guardarla.');
   }
+};
+
+const toggleDeviceSelection = (device) => {
+  const index = selectedDevices.value.indexOf(device);
+  if (index === -1) {
+    selectedDevices.value.push(device);
+  } else {
+    selectedDevices.value.splice(index, 1);
+  }
+};
+
+const confirmCreateGeozona = () => {
+  // Lógica para crear la geozona con los dispositivos seleccionados
+  console.log('Dispositivos seleccionados:', selectedDevices.value);
+  closeDeviceModal();
 };
 </script>
 
