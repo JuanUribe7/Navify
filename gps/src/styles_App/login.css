@@ -1,133 +1,283 @@
+
+
 .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: url('../assets/world-map.jpg') no-repeat center center fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  height: 100%;
+  background: url('../assets/world-map.jpg') no-repeat center center;
+  background-size: cover;
+}
+
+.map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+.login-box {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 3rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2;
+  width: 400px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.satellite-logo {
+  width: 80px;
+  height: 80px;
+  animation: orbit 10s linear infinite;
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg) translateX(30px) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(30px) rotate(-360deg);
+  }
+}
+
+.logo h1 {
+  color: #ffffff;
+  font-size: 2.5rem;
+  margin-top: 1rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+  border-bottom: 2px solid #fff;
+  outline: none;
+  background: transparent;
+  transition: 0.5s;
+}
+
+.input-group label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: #fff;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+.input-group input:focus~label,
+.input-group input:valid~label {
+  top: -20px;
+  left: 0;
+  color: #03e9f4;
+  font-size: 0.8rem;
+}
+
+.input-group i {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  transition: 0.5s;
+}
+
+.input-group input:focus~i,
+.input-group input:valid~i {
+  color: #03e9f4;
+}
+
+.login-btn {
+  background-color: transparent;
+  color: #03e9f4;
+  border: 2px solid #03e9f4;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.5s;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-btn:hover {
+  background-color: #03e9f4;
+  color: #fff;
+}
+
+.typed-text {
+  color: #fff;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  height: 1.5rem;
+  text-align: center;
+}
+
+/* Estilos para teléfonos móviles */
+@media (max-width: 240px) {
+
+  .logo h1 {
+    font-size: 5px;
+  }
+
+}
+
+@media (max-width: 320px) and (orientation: portrait) {
+  .login-container {
     background-size: cover;
-    position: relative;
+    background-position: center;
   }
-  
-  .map-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1;
-  }
-  
+
   .login-box {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 3rem;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 2;
-    width: 400px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    border-radius: 1px;
+    height: 100%;
   }
-  
-  .logo {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  
+
   .satellite-logo {
     width: 80px;
     height: 80px;
     animation: orbit 10s linear infinite;
   }
-  
-  @keyframes orbit {
-    from { transform: rotate(0deg) translateX(30px) rotate(0deg); }
-    to { transform: rotate(360deg) translateX(30px) rotate(-360deg); }
-  }
-  
+
   .logo h1 {
-    color: #ffffff;
-    font-size: 2.5rem;
-    margin-top: 1rem;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    font-size: 2rem;
+    margin-top: 3rem;
   }
-  
-  .login-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .input-group {
-    position: relative;
-    margin-bottom: 2rem;
-  }
-  
-  .input-group input {
-    width: 100%;
-    padding: 10px 0;
-    font-size: 1rem;
-    color: #fff;
-    border: none;
-    border-bottom: 2px solid #fff;
-    outline: none;
-    background: transparent;
-    transition: 0.5s;
-  }
-  
-  .input-group label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px 0;
-    font-size: 1rem;
-    color: #fff;
-    pointer-events: none;
-    transition: 0.5s;
-  }
-  
-  .input-group input:focus ~ label,
-  .input-group input:valid ~ label {
-    top: -20px;
-    left: 0;
-    color: #03e9f4;
-    font-size: 0.8rem;
-  }
-  
-  .input-group i {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #fff;
-    transition: 0.5s;
-  }
-  
-  .input-group input:focus ~ i,
-  .input-group input:valid ~ i {
-    color: #03e9f4;
-  }
-  
-  .login-btn {
-    background-color: transparent;
-    color: #03e9f4;
-    border: 2px solid #03e9f4;
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.5s;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .login-btn:hover {
-    background-color: #03e9f4;
-    color: #fff;
-  }
-  
+
   .typed-text {
-    color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin-bottom: 2rem;
-    height: 1.5rem;
     text-align: center;
   }
+}
+
+
+
+
+@media (max-width: 480px) {
+
+  .login-container {
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+  }
+
+
+
+  .login-box {
+    width: 100%;
+    border-radius: 1px;
+    height: 100%;
+  }
+
+
+  .satellite-logo {
+    width: 80px;
+    height: 80px;
+    animation: orbit 10s linear infinite;
+  }
+
+
+  .logo h1 {
+    font-size: 2rem;
+    margin-top: 3rem;
+  }
+
+  .typed-text {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+}
+
+/* Modo vertical (portrait) */
+@media (max-width: 480px) and (orientation: portrait) {
+  .login-container {
+    background-size: cover;
+    background-position: center;
+  }
+
+  .login-box {
+    width: 100%;
+    border-radius: 1px;
+    height: 100%;
+  }
+
+  .satellite-logo {
+    width: 80px;
+    height: 80px;
+    animation: orbit 10s linear infinite;
+  }
+
+  .logo h1 {
+    font-size: 2rem;
+    margin-top: 3rem;
+  }
+
+  .typed-text {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+}
+
+/* Modo horizontal (landscape) */
+@media (max-width: 480px) and (orientation: landscape) {
+  .login-container {
+    background-size: contain; 
+    background-position: center;
+  }
+
+  .login-box {
+    width: 80%;
+    margin: 0 auto; 
+    border-radius: 1px;
+    height: auto; 
+  }
+
+  .satellite-logo {
+    width: 60px; 
+    height: 60px;
+    animation: orbit 8s linear infinite;
+  }
+
+  .logo h1 {
+    font-size: 1.5rem; 
+    margin-top: 2rem;
+  }
+
+  .typed-text {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+}
+
