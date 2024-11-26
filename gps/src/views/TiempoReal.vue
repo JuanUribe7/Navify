@@ -57,6 +57,7 @@ import 'leaflet/dist/leaflet.css';
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+import  { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 
 // Configuración de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -182,7 +183,7 @@ async function showDeviceOnMap(device) {
     // Mostrar información del dispositivo en un popup
     marker.bindPopup(`
       <b>${device.deviceName}</b><br>
-      Tiempo: ${fixTime}<br>
+      Tiempo: ${formatDate(utc(fixTime))}<br>
       Velocidad: ${speed} km/h <br>
 
       Encendido: ${ignition}<br>
