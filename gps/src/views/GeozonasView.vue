@@ -47,8 +47,6 @@
     </div>
   </section>
 </template>
-
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -82,7 +80,7 @@ let routingControl = null;
 let geozoneMarker = null;
 let coordinates = null;
 
-const showDeviceModal = ref(false);
+const showDeviceModal = ref(false); // Asegúrate de que esta variable esté definida
 const selectedDevices = ref([]); // Cambiado a selectedDevices
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -201,10 +199,10 @@ const initMap = () => {
           openModal(); // Abrir el modal de dispositivos
         });
       } catch (error) {
-        console.error('Error al guardar la geozona:', error);
+        console.error('Error al guardar la geozona:', error.response ? error.response.data : error.message);
         Swal.fire({
           title: 'Error',
-          text: 'Hubo un error al guardar la geozona.',
+          text: `Hubo un error al guardar la geozona: ${error.response ? error.response.data : error.message}`,
           icon: 'error'
         });
       }
