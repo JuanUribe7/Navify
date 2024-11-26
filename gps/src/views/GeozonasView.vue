@@ -408,6 +408,7 @@ onUnmounted(() => {
 });
 </script>
 
+
 <style scoped>
 .home {
   height: 100vh;
