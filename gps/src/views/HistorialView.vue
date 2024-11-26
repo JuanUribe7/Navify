@@ -188,7 +188,7 @@ const showHistory = async (device, startDate, endDate) => {
   }
 
   try {
-    const response = await axios.get(`http://3.12.147.103/devices/history`, {
+    const response = await axios.get(`http://3.12.147.103/history/${device.imei}`, {
       params: {
         start: startDate,
         end: endDate
