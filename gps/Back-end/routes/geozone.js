@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Geozone = require('../models/Geozone');
+const Device = require('../models/Device'); 
 // Endpoint POST para guardar una geozona en la base de datos
 router.post('/geozones', async (req, res) => {
     try {
