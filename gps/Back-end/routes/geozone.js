@@ -23,12 +23,16 @@ router.post('/geozones', async (req, res) => {
   
       // Verificar que el array de IMEIs no esté vacío
       if (imeis && imeis.length > 0) {
-        // Actualizar los dispositivos con el nombre de la geozona
-        await Device.update(
-          { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-          { $set: { geozoneName: name } }, // Asignar el nombre de la geozona
-          { multi: true } // Actualizar múltiples documentos
-        );
+        // Crear operaciones de actualización para cada IMEI
+        const bulkOps = imeis.map(imei => ({
+          updateOne: {
+            filter: { imei: imei },
+            update: { $set: { geozoneName: name } }
+          }
+        }));
+  
+        // Ejecutar las operaciones de actualización en bloque
+        await Device.bulkWrite(bulkOps);
       }
   
       res.status(200).json({ message: 'Dispositivos actualizados con éxito' });
