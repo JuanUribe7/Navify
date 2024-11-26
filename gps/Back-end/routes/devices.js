@@ -223,7 +223,25 @@ router.put('/geozones/:id', async (req, res) => {
       res.status(500).json({ error: 'Error al actualizar los dispositivos: ' + error.message, details: error });
     }
   });
+  router.put('/update-route', async (req, res) => {
+    try {
+      const { imeis, name } = req.body; // Extraer el array de IMEIs y el nombre de la ruta
   
+      // Verificar que el array de IMEIs no esté vacío
+      if (imeis && imeis.length > 0) {
+        // Actualizar los dispositivos con el nombre de la ruta
+        await Device.updateMany(
+          { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
+          { $set: { routeName: name } } // Asignar el nombre de la ruta
+        );
+      }
+  
+      res.status(200).json({ message: 'Dispositivos actualizados con éxito' });
+    } catch (error) {
+      console.error('Error al actualizar los dispositivos:', error);
+      res.status(500).json({ error: 'Error al actualizar los dispositivos: ' + error.message, details: error });
+    }
+  });
 
 
 

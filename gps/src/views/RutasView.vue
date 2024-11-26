@@ -51,17 +51,16 @@
             {{ device.deviceName }}
           </li>
         </ul>
-        <button @click="confirmCreateGeozona" class="create-button">Crear Geozona</button>
+        <button @click="confirmCreateRoute" class="create-button">Crear Geozona</button>
       </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import NavBar from '../components/NavBar.vue';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
@@ -69,6 +68,7 @@ import 'leaflet-control-geocoder/dist/Control.Geocoder.js';
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+import Swal from 'sweetalert2';
 
 let map;
 let waypoints = [];
@@ -221,7 +221,15 @@ const saveRoute = async () => {
     try {
       const response = await axios.post('http://3.12.147.103/routes/save-route', { name: routeName.value, waypoints: route });
       console.log('Ruta guardada:', response.data);
-      alert('Ruta guardada');
+
+      // Mostrar mensaje de confirmación con Swal.fire
+      Swal.fire({
+        title: 'Ruta guardada',
+        text: 'La ruta ha sido guardada exitosamente en la base de datos.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
       cargarRutas();
       routeName.value = '';
       closeModal();
@@ -264,12 +272,46 @@ const toggleDeviceSelection = (device) => {
   }
 };
 
-const confirmCreateGeozona = () => {
-  // Lógica para crear la geozona con los dispositivos seleccionados
-  console.log('Dispositivos seleccionados:', selectedDevices.value);
-  closeDeviceModal();
+const confirmCreateRoute = async () => {
+  try {
+    const imeis = selectedDevices.value.map(device => device.imei);
+    const routeData = {
+      name: routeName.value,
+      imeis: imeis
+    };
+
+    // Imprimir routeData antes de enviar
+    console.log('Datos de la ruta a enviar con dispositivos:', routeData);
+
+    // Hacer el POST para asignar la ruta a los dispositivos
+    const postResponse = await axios.post('http://3.12.147.103/routes/assign-route', routeData);
+    console.log('Ruta asignada:', postResponse.data);
+
+    // Hacer el PUT para actualizar el parámetro routeName de los dispositivos seleccionados
+    const putResponse = await axios.put('http://3.12.147.103/devices/update-route', routeData);
+    console.log('Dispositivos actualizados:', putResponse.data);
+
+    // Mostrar mensaje de confirmación con Swal.fire
+    Swal.fire({
+      title: 'Ruta asignada y dispositivos actualizados',
+      text: 'La ruta ha sido asignada y los dispositivos han sido actualizados exitosamente.',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+
+    closeDeviceModal();
+  } catch (error) {
+    console.error('Error al asignar la ruta y actualizar los dispositivos:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Hubo un error al asignar la ruta y actualizar los dispositivos.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  }
 };
 </script>
+
 
 <style scoped>
 .map-container {
