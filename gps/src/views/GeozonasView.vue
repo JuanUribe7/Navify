@@ -48,6 +48,7 @@
   </section>
 </template>
 
+
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -83,6 +84,7 @@ let coordinates = null;
 
 const showDeviceModal = ref(false);
 const selectedDevices = ref([]);
+const devices = ref([]); // Variable reactiva para almacenar los dispositivos
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -318,6 +320,20 @@ const cargarGeozonas = async () => {
   }
 };
 
+const cargarDispositivos = async () => {
+  try {
+    const response = await axios.get('http://3.12.147.103/devices');
+    if (response.status === 200) {
+      devices.value = response.data;
+      console.log('Dispositivos cargados:', devices.value);
+    } else {
+      throw new Error('Error en la respuesta de la API');
+    }
+  } catch (error) {
+    console.error('Error al cargar dispositivos:', error);
+  }
+};
+
 const openModal = () => {
   showDeviceModal.value = true;
 };
@@ -375,6 +391,7 @@ const confirmCreateGeozona = async () => {
 
 onMounted(() => {
   cargarGeozonas();
+  cargarDispositivos(); // Cargar los dispositivos al montar el componente
   initMap();
   typeEffect();
 });
@@ -386,7 +403,6 @@ onUnmounted(() => {
   }
 });
 </script>
-
 
 <style scoped>
 .home {
