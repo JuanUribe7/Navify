@@ -137,6 +137,7 @@ function filterResults() {
 }
 
 const showAlert = (item) => {
+  console.log('IMEI del dispositivo:', item.imei);
   Swal.fire({
     title: 'Seleccionar rango de fechas y horas',
     html:
@@ -157,6 +158,8 @@ const showAlert = (item) => {
       const startTime = document.getElementById('start-time').value;
       const endDate = document.getElementById('end-date').value;
       const endTime = document.getElementById('end-time').value;
+      console.log(startDate)
+      console.log(startTime)
 
       if (!startDate || !startTime || !endDate || !endTime) {
         Swal.showValidationMessage('Por favor ingrese todas las fechas y horas');
@@ -165,7 +168,8 @@ const showAlert = (item) => {
 
       const startDateTime = new Date(`${startDate}T${startTime}:00.000Z`).toISOString();
       const endDateTime = new Date(`${endDate}T${endTime}:00.000Z`).toISOString();
-
+      console.log(startDateTime)
+      console.log(endDateTime)
       return { startDate: startDateTime, endDate: endDateTime };
     }
   }).then((result) => {
@@ -176,6 +180,7 @@ const showAlert = (item) => {
 };
 
 const showHistory = async (device, startDate, endDate) => {
+  console.log('IMEI del dispositivo:', device.imei);
   if (!device || !device._id) {
     console.error('ID del dispositivo no válido:', device);
     Swal.fire({
@@ -188,12 +193,14 @@ const showHistory = async (device, startDate, endDate) => {
   }
 
   try {
-    const response = await axios.get(`http://3.12.147.103/history/${device.imei}`, {
+    // Asegúrate de usar los parámetros correctamente
+    const response = await axios.get(`http://3.12.147.103/devices/history/${device.imei}`, {
       params: {
-        start: startDate,
-        end: endDate
+        startDate: startDate,  // Cambié `start` por `startDate`
+        endDate: endDate       // Cambié `end` por `endDate`
       }
     });
+
     const historyData = response.data;
     console.log('Datos de historial recibidos:', historyData);
 
@@ -201,23 +208,23 @@ const showHistory = async (device, startDate, endDate) => {
       throw new Error('La respuesta del servidor no es un array.');
     }
 
-    if (!historyData.length) {
-      throw new Error('No se encontraron datos de historial para este IMEI.');
-    }
-
+   
     const coordenadas = historyData.map(point => [point.lat, point.lon]);
 
+    // Remover polilínea anterior si existe
     if (polyline) {
       map.removeLayer(polyline);
     }
 
     polyline = L.polyline(coordenadas, { color: 'red' }).addTo(map);
 
+    // Eliminar el marcador anterior
     if (marker) {
       map.removeLayer(marker);
     }
     marker = L.marker(coordenadas[0]).addTo(map).bindPopup('Inicio');
 
+    // Ajustar el mapa para que se vea la polilínea
     map.fitBounds(polyline.getBounds());
 
     window.recordingCoords = coordenadas;
@@ -232,6 +239,7 @@ const showHistory = async (device, startDate, endDate) => {
     });
   }
 };
+
 
 const playRecording = () => {
   if (!window.recordingCoords) {

@@ -166,14 +166,23 @@ router.get('/history/:imei', async (req, res) => {
         const { imei } = req.params;
         const { startDate, endDate } = req.query;
 
-        // Verificar que los parámetros de fecha estén presentes
+        // Verificar que los parámetros startDate y endDate estén presentes
         if (!startDate || !endDate) {
-            return res.status(400).json({ error: 'Los parámetros startDate y endDate son requerido' });
+            return res.status(400).json({ error: 'Los parámetros startDate y endDate son requeridos.' });
         }
 
-        // Convertir las fechas a objetos Date.
+        // Verificar si las fechas son válidas
         const start = new Date(startDate);
         const end = new Date(endDate);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({ error: 'Las fechas proporcionadas no son válidas.' });
+        }
+
+        // Asegurarse de que la fecha de inicio no sea posterior a la fecha de fin
+        if (start > end) {
+            return res.status(400).json({ error: 'La fecha de inicio no puede ser posterior a la fecha de fin.' });
+        }
 
         // Buscar los datos de historial dentro del rango de fechas
         const historyData = await HistoryData.find({
@@ -183,6 +192,11 @@ router.get('/history/:imei', async (req, res) => {
                 $lte: end
             }
         }).sort({ fixTime: 1 });
+
+        // Verificar si se encontraron datos
+        if (historyData.length === 0) {
+            return res.status(404).json({ error: 'No se encontraron datos de historial para el rango de fechas proporcionado.' });
+        }
 
         res.json(historyData);
     } catch (error) {
@@ -210,6 +224,7 @@ router.put('/geozones/:id', async (req, res) => {
     }
   });
   
+
 
 
 
