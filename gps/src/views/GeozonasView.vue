@@ -48,7 +48,6 @@
   </section>
 </template>
 
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -355,6 +354,8 @@ const toggleDeviceSelection = (device) => {
     // Si no está seleccionado, lo agregamos
     selectedDevices.value.push(device);
   }
+  // Imprimir selectedDevices después de cada cambio
+  console.log('Dispositivos seleccionados:', selectedDevices.value);
 };
 
 const confirmCreateGeozona = async () => {
@@ -373,6 +374,9 @@ const confirmCreateGeozona = async () => {
       ...selectedGeozone.value,
       imeis: imeis
     };
+
+    // Imprimir geozoneData antes de enviar
+    console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
 
     const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
     console.log('Geozona y dispositivos asignados guardados:', response.data);
@@ -407,7 +411,6 @@ onUnmounted(() => {
   }
 });
 </script>
-
 
 <style scoped>
 .home {

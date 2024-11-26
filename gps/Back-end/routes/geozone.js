@@ -10,10 +10,6 @@ router.post('/geozones', async (req, res) => {
       await geozone.save();
   
       // Actualizar los dispositivos con el nombre de la geozona
-      await Device.updateMany(
-        { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-        { $set: { geozoneName: geozone.name } } // Asignar el nombre de la geozona
-      );
       res.status(201).json(geozone);
     } catch (error) {
       console.error('Error al guardar la geozona:', error.message);
