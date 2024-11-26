@@ -6,6 +6,7 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import gasolinaImage from './assets/gasolina.png'; // Importa la imagen
 import maxSpeed from  './assets/maxSpeed.png'
+import accidente from  './assets/accidente.jpg'
 // Configurar WebSocket
 const ws = new WebSocket('ws://3.12.147.103');
 ws.onmessage = (event) => {
@@ -30,7 +31,7 @@ iziToast.warning({
     title: 'Notificación',
     message: notificacion.notificationName || 'Nueva notificación',
     position: 'bottomRight',
-    image: gasolinaImage,
+    image: accidente,
     timeout: 5000 // Mostrar la alerta durante 5 segundos
 }):null;
 

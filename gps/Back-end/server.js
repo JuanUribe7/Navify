@@ -130,7 +130,7 @@ var tcpServer = net.createServer((client) => {
                 }
 
 
-                if (previousSpeed - gt06.speed >= BRAKING_THRESHOLD) {
+                if (previousSpeed - gt06.speed >= previousSpeed-5) {
                     console.log(`Frenado brusco detectado, creando alerta...`);
                     const notificacion = new Notification({
                         imei: gt06.imei,
