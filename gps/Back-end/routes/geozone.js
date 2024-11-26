@@ -2,8 +2,7 @@
 module.exports = mongoose.model('Geozone', geozoneSchema);
 const express = require('express');
 const router = express.Router();
-const Geozone = require('./models/geozone'); // Asegúrate de que la ruta sea correcta
-
+const Geozone = require('../models/Geozone');
 // Endpoint POST para guardar una geozona en la base de datos
 router.post('/geozones', async (req, res) => {
     try {
