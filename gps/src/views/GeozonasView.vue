@@ -47,6 +47,7 @@
     </div>
   </section>
 </template>
+
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -80,8 +81,8 @@ let routingControl = null;
 let geozoneMarker = null;
 let coordinates = null;
 
-const showDeviceModal = ref(false); // Asegúrate de que esta variable esté definida
-const selectedDevices = ref([]); // Cambiado a selectedDevices
+const showDeviceModal = ref(false);
+const selectedDevices = ref([]);
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -189,20 +190,19 @@ const initMap = () => {
 
       // Guardar la geozona en la base de datos y abrir el modal de dispositivos
       try {
-        const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
-        console.log('Geozona guardada:', response.data);
+        selectedGeozone.value = geozoneData; // Almacenar los datos de la geozona creada
         Swal.fire({
-          title: 'Geozona guardada',
-          text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
+          title: 'Geozona creada',
+          text: 'La geozona ha sido creada exitosamente. Ahora selecciona los dispositivos.',
           icon: 'success'
         }).then(() => {
           openModal(); // Abrir el modal de dispositivos
         });
       } catch (error) {
-        console.error('Error al guardar la geozona:', error.response ? error.response.data : error.message);
+        console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
         Swal.fire({
           title: 'Error',
-          text: `Hubo un error al guardar la geozona: ${error.response ? error.response.data : error.message}`,
+          text: `Hubo un error al crear la geozona: ${error.response ? error.response.data : error.message}`,
           icon: 'error'
         });
       }
@@ -350,11 +350,7 @@ const confirmCreateGeozona = async () => {
   try {
     const imeis = selectedDevices.value.map(device => device.imei);
     const geozoneData = {
-      name: selectedGeozone.value.name,
-      type: selectedGeozone.value.type,
-      center: selectedGeozone.value.center,
-      radius: selectedGeozone.value.radius,
-      vertices: selectedGeozone.value.vertices,
+      ...selectedGeozone.value,
       imeis: imeis
     };
 

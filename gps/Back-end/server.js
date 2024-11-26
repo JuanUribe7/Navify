@@ -17,6 +17,8 @@ const { WebSocketServer } = require('ws');
 const iniciarWatcher = require('./utils/notificationWatcher');
 const Notification = require('./models/notification'); // Importa el modelo de notificación
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
+const geozoneRoutes = require('./routes/geozone');
+
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -164,7 +166,7 @@ app.use('/auth', authRoutes);
 app.use('/devices', deviceRoutes);
 app.use('/routes', routes);
 app.use('/notificaciones', notificacionRoutes);
-
+app.use('/geozone', geozoneRoutes);
 
 
 
