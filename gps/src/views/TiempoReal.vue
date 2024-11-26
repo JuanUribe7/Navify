@@ -35,7 +35,8 @@
     <div class="cuadro">
       <div class="control-container">
         <p>Dispositivo: <span>{{ deviceName }}</span></p>
-        <p>Tiempo: <span>{{ fixTimeDOM }}</span></p>
+        
+        <p v-if="fixTimeDOM">Tiempo: <span>{{ formatDate(utc(fixTimeDOM)) }}</span></p>
         <p>Velocidad: <span>{{ speedDOM }} km/h</span></p>
         <p>Encendido: <span>{{ ignitionDOM }}</span></p>
         <p>Cargando: <span>{{ chargingDOM }}</span></p>
