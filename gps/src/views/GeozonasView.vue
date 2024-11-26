@@ -373,7 +373,7 @@ const confirmCreateGeozona = async () => {
   // Imprimir geozoneData antes de enviar
   console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
 
-  const response = await axios.put(`http://3.12.147.103/geozone/geozones/${selectedGeozone.value._id}`, geozoneData);
+  const response = await axios.put(`http://3.12.147.103/devices/geozones/${selectedGeozone.value._id}`, geozoneData);
   console.log('Geozona y dispositivos asignados guardados:', response.data);
   Swal.fire({
     title: 'Geozona actualizada',
