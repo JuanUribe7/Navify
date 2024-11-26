@@ -160,6 +160,7 @@ const showAlert = (item) => {
 
       if (!startDate || !startTime || !endDate || !endTime) {
         Swal.showValidationMessage('Por favor ingrese todas las fechas y horas');
+        return null;
       }
 
       const startDateTime = new Date(`${startDate}T${startTime}:00.000Z`).toISOString();
