@@ -29,6 +29,11 @@ const mqttProtocol = process.env.MQTT_BROKER_PROTO || 'mqtt';
 const brokerUser = process.env.MQTT_BROKER_USER || 'DiegoGPS';
 const brokerPasswd = process.env.MQTT_BROKER_PASSWD || 'Dl1042248136!';
 
+let previousSpeed = 0;
+const BRAKING_THRESHOLD = 80;
+
+
+
 
 app.get('/send-command/:commandNumber', (req, res) => {
     const commandNumber = parseInt(req.params.commandNumber, 10);
@@ -90,12 +95,66 @@ var tcpServer = net.createServer((client) => {
             if (gt06.event.string === 'location') {
                 const gpsTime = new Date();
 
+                previousSpeed=gt06.speed
+        // Variable para almacenar la velocidad anterior
+                 // Umbral de frenado brusco en km/h
+
 
                 // Convertir a la hora local
                 const localTime = new Date(gpsTime.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
                 
                 // Formatear la hora local en ISO 8601
                 const localTimeISO = localTime.toISOString();
+
+                //agregar alertas y notificaciones de velocidad
+                if (gt06.speed > 2) {
+                    console.log(`Velocidad de ${gt06.speed} km/h detectada, creando alerta...`);
+                    const notificacion = new Notification({
+                        imei: gt06.imei,
+                        notificationName: `Exceso de velocidad: ${gt06.speed} km/h`,
+                        notificationTime: localTimeISO,
+                        notificationType: 'maxSpeed' // Tipo de notificación
+                    });
+                    const alert = new Alert({
+                        imei: gt06.imei,
+                        alertName: `Exceso de velocidad: ${gt06.speed} km/h`,
+                        alertTime: localTimeISO
+                    });
+                    try {
+                        await notificacion.save();
+                        await alert.save();
+                        console.log(`Notificación de exceso de velocidad guardada para IMEI: ${gt06.imei}`);
+                    } catch (error) {
+                        console.error('Error al guardar la notificación:', error);
+                    }
+                }
+
+
+                if (previousSpeed - gt06.speed >= BRAKING_THRESHOLD) {
+                    console.log(`Frenado brusco detectado, creando alerta...`);
+                    const notificacion = new Notification({
+                        imei: gt06.imei,
+                        notificationName: `Frenado brusco: de ${previousSpeed} km/h a ${gt06.speed} km/h`,
+                        notificationTime: localTimeISO,
+                        notificationType: 'hardBraking' // Tipo de notificación
+                    });
+                    const alert = new Alert({
+                        imei: gt06.imei,
+                        alertName: `Frenado brusco: de ${previousSpeed} km/h a ${gt06.speed} km/h`,
+                        alertTime: localTimeISO
+                    });
+                    try {
+                        await notificacion.save();
+                        await alert.save();
+                        console.log(`Notificación de frenado brusco guardada para IMEI: ${gt06.imei}`);
+                    } catch (error) {
+                        console.error('Error al guardar la notificación:', error);
+                    }
+                }
+                previousSpeed = gt06.speed;
+
+
+             
                 const deviceData = {
                     imei: gt06.imei,
                     Lat: gt06.lat,
