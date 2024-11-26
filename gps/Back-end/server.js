@@ -216,7 +216,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb+srv://lospopulare:gps1234@gps.zgbl7.mongodb.net/proyecto?retryWrites=true&w=majority&appName=gps', {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useFindAndModify: false,
+   
 })
 .then(() => console.log('Conectado a MongoDB'))
 .catch(err => console.error('Error de conexión a MongoDB:', err));
