@@ -190,12 +190,16 @@ const initMap = () => {
         };
       }
 
+      // Imprimir geozoneData antes de enviar
+      console.log('Datos de la geozona a enviar:', geozoneData);
+
       // Guardar la geozona en la base de datos y abrir el modal de dispositivos
       try {
-        selectedGeozone.value = geozoneData; // Almacenar los datos de la geozona creada
+        const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
+        console.log('Geozona guardada:', response.data);
         Swal.fire({
-          title: 'Geozona creada',
-          text: 'La geozona ha sido creada exitosamente. Ahora selecciona los dispositivos.',
+          title: 'Geozona guardada',
+          text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
           icon: 'success'
         }).then(() => {
           openModal(); // Abrir el modal de dispositivos
@@ -204,7 +208,7 @@ const initMap = () => {
         console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
         Swal.fire({
           title: 'Error',
-          text: `Hubo un error al crear la geozona: ${error.response ? error.response.data : error.message}`,
+          text: `Hubo un error al crear la geozona: ${error.response ? JSON.stringify(error.response.data) : error.message}`,
           icon: 'error'
         });
       }
