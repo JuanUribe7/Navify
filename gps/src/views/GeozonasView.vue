@@ -47,6 +47,8 @@
     </div>
   </section>
 </template>
+
+
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -67,8 +69,8 @@ const drawnItems = ref(new L.FeatureGroup());
 const searchQuery = ref('');
 const geozones = ref([]);
 const filteredResults = ref([]);
-const selectedGeozone = ref(null); // Cambiado a selectedGeozone
-const geozoneShapes = ref({}); // Cambiado a geozoneShapes
+const selectedGeozone = ref(null);
+const geozoneShapes = ref({});
 const dropdownOpen = ref(false);
 
 const fullText = "Navify";
@@ -77,11 +79,11 @@ let currentIndex = 0;
 let isDeleting = false;
 let typingInterval;
 let routingControl = null;
-let geozoneMarker = null; // Cambiado a geozoneMarker
+let geozoneMarker = null;
 let coordinates = null;
 
-const showDeviceModal = ref(false); 
-const selectedGeozones = ref([]); // Cambiado a selectedGeozones
+const showDeviceModal = ref(false);
+const selectedDevices = ref([]); // Cambiado a selectedDevices
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -154,7 +156,6 @@ const initMap = () => {
         }
         return options;
       }, {});
-      openModal();
 
       let geozoneData;
 
@@ -188,14 +189,16 @@ const initMap = () => {
         };
       }
 
-      // Hacer el POST al endpoint para guardar la geozona en la base de datos
+      // Guardar la geozona en la base de datos y abrir el modal de dispositivos
       try {
         const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
         console.log('Geozona guardada:', response.data);
         Swal.fire({
           title: 'Geozona guardada',
-          text: 'La geozona ha sido guardada exitosamente.',
+          text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
           icon: 'success'
+        }).then(() => {
+          openModal(); // Abrir el modal de dispositivos
         });
       } catch (error) {
         console.error('Error al guardar la geozona:', error);
@@ -325,50 +328,55 @@ const closeModal = () => {
   showDeviceModal.value = false;
 };
 
-const toggleGeozoneSelection = (geozone) => {
-  const index = selectedGeozones.value.indexOf(geozone);
+const toggleDeviceSelection = (device) => {
+  const index = selectedDevices.value.indexOf(device);
   if (index > -1) {
-    // Si la geozona ya está seleccionada, la eliminamos
-    selectedGeozones.value.splice(index, 1);
+    // Si el dispositivo ya está seleccionado, lo eliminamos
+    selectedDevices.value.splice(index, 1);
   } else {
-    // Si no está seleccionada, la agregamos.
-    selectedGeozones.value.push(geozone);
+    // Si no está seleccionado, lo agregamos
+    selectedDevices.value.push(device);
   }
 };
 
-const confirmCreateGeozona = () => {
-  if (selectedGeozones.value.length === 0) {
+const confirmCreateGeozona = async () => {
+  if (selectedDevices.value.length === 0) {
     Swal.fire({
       icon: 'warning',
       title: 'Sin selección',
-      text: 'Por favor, selecciona al menos una geozona para crearla.',
+      text: 'Por favor, selecciona al menos un dispositivo para asignar a la geozona.',
     });
     return;
   }
 
-  Swal.fire({
-    title: '¿Estás seguro?',
-    text: "¿Deseas crear la geozona para las geozonas seleccionadas?",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, crear',
-    cancelButtonText: 'No, cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      console.log('Creando geozona para las geozonas:', selectedGeozones.value);
-      
-      Swal.fire({
-        title: 'Geozona creada',
-        icon: 'success'
-      }).then(() => {
-        closeModal();
-      });
-    } else {
-      console.log('Creación de geozona cancelada.');
-      drawnItems.value.clearLayers();
-      coordinates = null;
-    }
-  });
+  try {
+    const imeis = selectedDevices.value.map(device => device.imei);
+    const geozoneData = {
+      name: selectedGeozone.value.name,
+      type: selectedGeozone.value.type,
+      center: selectedGeozone.value.center,
+      radius: selectedGeozone.value.radius,
+      vertices: selectedGeozone.value.vertices,
+      imeis: imeis
+    };
+
+    const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
+    console.log('Geozona y dispositivos asignados guardados:', response.data);
+    Swal.fire({
+      title: 'Geozona creada',
+      text: 'La geozona y los dispositivos han sido guardados exitosamente.',
+      icon: 'success'
+    }).then(() => {
+      closeModal();
+    });
+  } catch (error) {
+    console.error('Error al guardar la geozona y los dispositivos:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Hubo un error al guardar la geozona y los dispositivos.',
+      icon: 'error'
+    });
+  }
 };
 
 onMounted(() => {
@@ -384,6 +392,8 @@ onUnmounted(() => {
   }
 });
 </script>
+
+
 <style scoped>
 .home {
   height: 100vh;
