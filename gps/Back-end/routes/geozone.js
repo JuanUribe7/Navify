@@ -1,5 +1,3 @@
-
-module.exports = mongoose.model('Geozone', geozoneSchema);
 const express = require('express');
 const router = express.Router();
 const Geozone = require('../models/Geozone');
