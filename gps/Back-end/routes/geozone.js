@@ -24,9 +24,10 @@ router.post('/geozones', async (req, res) => {
       // Verificar que el array de IMEIs no esté vacío
       if (imeis && imeis.length > 0) {
         // Actualizar los dispositivos con el nombre de la geozona
-        await Device.updateMany(
+        await Device.update(
           { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-          { $set: { geozoneName: name } } // Asignar el nombre de la geozona
+          { $set: { geozoneName: name } }, // Asignar el nombre de la geozona
+          { multi: true } // Actualizar múltiples documentos
         );
       }
   
