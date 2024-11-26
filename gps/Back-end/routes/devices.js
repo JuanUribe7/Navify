@@ -227,7 +227,7 @@ router.put('/geozones/:id', async (req, res) => {
     try {
       const { imeis, name } = req.body; // Extraer el array de IMEIs y el nombre de la ruta
   
-      // Verificar que el array de IMEIs no esté vacío
+      // Verificar que el array de IMEIs no esté vacío joa
       if (imeis && imeis.length > 0) {
         // Actualizar los dispositivos con el nombre de la ruta
         await Device.updateMany(
