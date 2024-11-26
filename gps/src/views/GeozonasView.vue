@@ -37,8 +37,8 @@
         <span class="close" @click="closeModal">&times;</span>
         <h2>Seleccionar Dispositivo</h2>
         <ul class="device-list-modal">
-          <li v-for="device in devices" :key="device.id" @click="toggleDeviceSelection(device)" class="device-item">
-            <input type="checkbox" :checked="selectedDevices.includes(device)" />
+          <li v-for="device in devices" :key="device.id" class="device-item">
+            <input type="checkbox" :checked="selectedDevices.includes(device)" @click.stop="toggleDeviceSelection(device)" />
             {{ device.deviceName }}
           </li>
         </ul>
@@ -68,7 +68,7 @@ const drawnItems = ref(new L.FeatureGroup());
 const searchQuery = ref('');
 const geozones = ref([]);
 const filteredResults = ref([]);
-const selectedGeozone = ref(null);
+const selectedGeozone = ref(null); // Referencia reactiva para almacenar la geozona seleccionada
 const geozoneShapes = ref({});
 const dropdownOpen = ref(false);
 
@@ -196,6 +196,7 @@ const initMap = () => {
       try {
         const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
         console.log('Geozona guardada:', response.data);
+        selectedGeozone.value = response.data; // Almacenar la geozona creada en selectedGeozone
         Swal.fire({
           title: 'Geozona guardada',
           text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
@@ -250,16 +251,7 @@ const showGeozoneOnMap = (geozone) => {
 };
 
 const selectGeozone = (geozone) => {
-  if (!coordinates) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Geozona no creada',
-      text: 'Primero debes crear la geozona antes de seleccionarla.',
-    });
-    return;
-  }
-
-  selectedGeozone.value = geozone;
+  selectedGeozone.value = geozone; // Almacenar la geozona seleccionada en selectedGeozone
 
   if (geozoneShapes.value[geozone.id]) {
     geozoneShapes.value[geozone.id].forEach(layer => {
@@ -369,32 +361,35 @@ const confirmCreateGeozona = async () => {
   }
 
   try {
-    const imeis = selectedDevices.value.map(device => device.imei);
-    const geozoneData = {
-      ...selectedGeozone.value,
-      imeis: imeis
-    };
+  // Imprimir selectedGeozone para depuración
+  console.log('Geozona seleccionada:', selectedGeozone.value);
 
-    // Imprimir geozoneData antes de enviar
-    console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
+  const imeis = selectedDevices.value.map(device => device.imei);
+  const geozoneData = {
+    name: selectedGeozone.value.name, // Solo enviar el nombre de la geozona
+    imeis: imeis
+  };
 
-    const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
-    console.log('Geozona y dispositivos asignados guardados:', response.data);
-    Swal.fire({
-      title: 'Geozona creada',
-      text: 'La geozona y los dispositivos han sido guardados exitosamente.',
-      icon: 'success'
-    }).then(() => {
-      closeModal();
-    });
-  } catch (error) {
-    console.error('Error al guardar la geozona y los dispositivos:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'Hubo un error al guardar la geozona y los dispositivos.',
-      icon: 'error'
-    });
-  }
+  // Imprimir geozoneData antes de enviar
+  console.log('Datos de la geozona a enviar con dispositivos:', geozoneData);
+
+  const response = await axios.put(`http://3.12.147.103/geozone/geozones/${selectedGeozone.value._id}`, geozoneData);
+  console.log('Geozona y dispositivos asignados guardados:', response.data);
+  Swal.fire({
+    title: 'Geozona actualizada',
+    text: 'La geozona y los dispositivos han sido actualizados exitosamente.',
+    icon: 'success'
+  }).then(() => {
+    closeModal();
+  });
+} catch (error) {
+  console.error('Error al actualizar la geozona y los dispositivos:', error);
+  Swal.fire({
+    title: 'Error',
+    text: 'Hubo un error al actualizar la geozona y los dispositivos.',
+    icon: 'error'
+  });
+}
 };
 
 onMounted(() => {
