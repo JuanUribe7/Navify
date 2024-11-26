@@ -107,6 +107,7 @@ const clearNotifications = async () => {
 };
 
 onMounted(() => {
+    cargarNotificaciones();
 
     let ws = new WebSocket('ws://3.12.147.103');
     ws.onmessage = (event) => {
