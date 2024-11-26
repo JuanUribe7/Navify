@@ -108,8 +108,12 @@ const clearNotifications = async () => {
 
 onMounted(() => {
     cargarNotificaciones();
+
     let ws = new WebSocket('ws://3.12.147.103');
     ws.onmessage = (event) => {
+        if(event){
+            cargarNotificaciones();
+        }
         const notificacion = JSON.parse(event.data);
         if (!notifications.value.some(alert => alert._id === notificacion._id)) {
             notifications.value.push(notificacion);
