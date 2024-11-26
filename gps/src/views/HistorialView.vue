@@ -8,21 +8,21 @@
         <h1>Historial</h1>
       </div>
       <div id="play-content" class="play-content">
-          <div class="player-controls">
-            <button @click="playRecording" class="control-button">
-              <i class='bx bx-play'></i>
-            </button>
-            <button @click="stopRecording" class="control-button">
-              <i class='bx bx-stop'></i>
-            </button>
-            <button @click="pauseRecording" class="control-button">
-              <i class='bx bx-pause'></i>
-            </button>
-            <button @click="resetRecording" class="control-button">
-              <i class='bx bx-reset'></i>
-            </button>
-          </div>
+        <div class="player-controls">
+          <button @click="playRecording" class="control-button">
+            <i class='bx bx-play'></i>
+          </button>
+          <button @click="stopRecording" class="control-button">
+            <i class='bx bx-stop'></i>
+          </button>
+          <button @click="pauseRecording" class="control-button">
+            <i class='bx bx-pause'></i>
+          </button>
+          <button @click="resetRecording" class="control-button">
+            <i class='bx bx-reset'></i>
+          </button>
         </div>
+      </div>
     </div>
 
     <div class="tituloo">
@@ -46,9 +46,7 @@
           </ul>
         </div>
       </div>
-      <div id="map" class="map-container">
-       
-      </div>
+      <div id="map" class="map-container"></div>
     </div>
   </section>
 </template>
@@ -63,6 +61,7 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import axios from 'axios';
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -188,10 +187,10 @@ const showHistory = async (device, startDate, endDate) => {
   }
 
   try {
-    const response = await axios.get(`http://3.12.147.103/devices/history/${device.imei}`, {
+    const response = await axios.get(`http://3.12.147.103/devices/history`, {
       params: {
-        startDate,
-        endDate
+        start: startDate,
+        end: endDate
       }
     });
     const historyData = response.data;
@@ -232,6 +231,7 @@ const showHistory = async (device, startDate, endDate) => {
     });
   }
 };
+
 const playRecording = () => {
   if (!window.recordingCoords) {
     Swal.fire({
