@@ -77,6 +77,8 @@ const searchQuery = ref('');
 const routes = ref([]);
 const filteredResults = ref([]);
 const routeName = ref('');
+let routeNamed = ""; // Definir routeName como una referencia reactiva
+ // Definir routeName como una referencia reactiva
 const showModal = ref(false);
 const showDeviceModal = ref(false);
 const devices = ref([]);
@@ -221,7 +223,7 @@ const saveRoute = async () => {
     try {
       const response = await axios.post('http://3.12.147.103/routes/save-route', { name: routeName.value, waypoints: route });
       console.log('Ruta guardada:', response.data);
-
+routeNamed = routeName.value;
       // Mostrar mensaje de confirmación con Swal.fire
       Swal.fire({
         title: 'Ruta guardada',
@@ -276,16 +278,12 @@ const confirmCreateRoute = async () => {
   try {
     const imeis = selectedDevices.value.map(device => device.imei);
     const routeData = {
-      name: routeName.value,
+      name: routeNamed,
       imeis: imeis
     };
 
     // Imprimir routeData antes de enviar
     console.log('Datos de la ruta a enviar con dispositivos:', routeData);
-
-    // Hacer el POST para asignar la ruta a los dispositivos
-    const postResponse = await axios.post('http://3.12.147.103/routes/assign-route', routeData);
-    console.log('Ruta asignada:', postResponse.data);
 
     // Hacer el PUT para actualizar el parámetro routeName de los dispositivos seleccionados
     const putResponse = await axios.put('http://3.12.147.103/devices/update-route', routeData);
