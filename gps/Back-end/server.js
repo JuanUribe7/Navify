@@ -280,8 +280,8 @@ async function SendCommand(commandNumber) {
         console.error('No GPS client connected');
     }
 }
-
-const wss = new WebSocket.Server({ HTTP_PORT  });
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server  });
 
 // Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
