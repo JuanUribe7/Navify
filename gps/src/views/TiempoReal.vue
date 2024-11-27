@@ -187,6 +187,12 @@ function startTracking(device) {
 
   ws.onerror = (error) => {
     console.error('Error en la conexión WebSocket:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
   };
 }
 

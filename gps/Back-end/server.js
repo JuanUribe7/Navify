@@ -18,7 +18,7 @@ const iniciarWatcher = require('./utils/notificationWatcher');
 const Notification = require('./models/notification'); // Importa el modelo de notificación
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
 const geozoneRoutes = require('./routes/geozone');
-const Device = require('./models/Device');
+const { Device, DeviceStatus} = require('./models/Device');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -279,9 +279,7 @@ async function SendCommand(commandNumber) {
         console.error('No GPS client connected');
     }
 }
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+
 
 // Inicia el servidor HTTP en el puerto especificado
 const server=app.listen(HTTP_PORT, () => {
@@ -308,4 +306,7 @@ wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
     });
+});
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
