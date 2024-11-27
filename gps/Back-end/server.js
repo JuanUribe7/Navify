@@ -18,7 +18,7 @@ const iniciarWatcher = require('./utils/notificationWatcher');
 const Notification = require('./models/notification'); // Importa el modelo de notificación
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
 const geozoneRoutes = require('./routes/geozone');
-
+const Device = require('./models/Device');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -294,10 +294,17 @@ wss.on('connection', (ws) => {
     console.log('Cliente WebSocket conectado');
 
     // Puedes manejar mensajes del cliente si es necesario
-    ws.on('message', (message) => {
+    ws.on('message', async (message) => {
         console.log('Mensaje recibido:', message);
-    });
+        const { imei } = JSON.parse(message);
 
+        // Obtener datos del dispositivo desde la base de datos
+        const deviceData = await Device.findOne({ imei });
+
+        if (deviceData) {
+            ws.send(JSON.stringify(deviceData));
+        }
+    });
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
     });

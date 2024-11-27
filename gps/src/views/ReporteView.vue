@@ -1,4 +1,4 @@
-<template>
+  <template>
   <section class="home">
     <div class="overlay"></div>
     <NavBar />
