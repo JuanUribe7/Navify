@@ -207,6 +207,9 @@ var tcpServer = net.createServer((client) => {
 tcpServer.listen(PORT, () => {
     console.log(`Servidor TCP corriendo en el puerto ${PORT}`);
 });
+const server=app.listen(HTTP_PORT, () => {
+    console.log(`Servidor HTTP corriendo en http://localhost:${HTTP_PORT}`);
+});
 
 // Middleware
 app.use(cors());
@@ -280,7 +283,7 @@ async function SendCommand(commandNumber) {
         console.error('No GPS client connected');
     }
 }
-const server = http.createServer(app);
+
 const wss = new WebSocket.Server({ server  });
 
 // Iniciar el watcher para cambios en la base de datos
