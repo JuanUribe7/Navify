@@ -61,7 +61,7 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import axios from 'axios';
-
+import  { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -193,41 +193,74 @@ const showHistory = async (device, startDate, endDate) => {
   }
 
   try {
-    // Asegúrate de usar los parámetros correctamente
-    const response = await axios.get(`http://3.12.147.103/devices/history/${device.imei}`, {
-      params: {
-        startDate: startDate,  // Cambié `start` por `startDate`
-        endDate: endDate       // Cambié `end` por `endDate`
-      }
-    });
+const response = await axios.get(`http://3.12.147.103/devices/history/${device.imei}`, {
+  params: {
+    startDate: startDate,
+    endDate: endDate
+  }
+});
 
-    const historyData = response.data;
-    console.log('Datos de historial recibidos:', historyData);
+const historyData = response.data;
 
-    if (!Array.isArray(historyData)) {
-      throw new Error('La respuesta del servidor no es un array.');
-    }
+if (!Array.isArray(historyData) || historyData.length === 0) {
+  throw new Error('No se encontraron datos de historial.');
+}
 
-   
-    const coordenadas = historyData.map(point => [point.lat, point.lon]);
+console.log('Datos de historial recibidos:', historyData);
 
-    // Remover polilínea anterior si existe
-    if (polyline) {
-      map.removeLayer(polyline);
-    }
+const coordenadas = historyData.map(point => [point.lat, point.lon]);
 
-    polyline = L.polyline(coordenadas, { color: 'red' }).addTo(map);
+// Remover polilínea anterior si existe
+if (polyline) {
+  map.removeLayer(polyline);
+}
 
-    // Eliminar el marcador anterior
-    if (marker) {
-      map.removeLayer(marker);
-    }
-    marker = L.marker(coordenadas[0]).addTo(map).bindPopup('Inicio');
+polyline = L.polyline(coordenadas, { color: 'red' }).addTo(map);
 
-    // Ajustar el mapa para que se vea la polilínea
-    map.fitBounds(polyline.getBounds());
+// Eliminar el marcador anterior si existe
+if (marker) {
+  map.removeLayer(marker);
+}
 
-    window.recordingCoords = coordenadas;
+marker = L.marker(coordenadas[0]).addTo(map).bindPopup('Inicio');
+
+// Función para actualizar el marcador y el popup
+const updateMarker = (index) => {
+  const { lat, lon, fixTime, speed, ignition, charging } = historyData[index];
+  marker.setLatLng([lat, lon]);
+
+  let formattedTime;
+  try {
+    formattedTime = formatDate(utc(fixTime));
+  } catch (error) {
+    console.error('Error al formatear la fecha:', error);
+    formattedTime = 'Fecha inválida';
+  }
+
+  marker.bindPopup(`
+    <b>${device.deviceName}</b><br>
+    Tiempo: ${formattedTime}<br>
+    Velocidad: ${speed} km/h <br>
+    Encendido: ${ignition}<br>
+    Cargando: ${charging}<br>
+  `).openPopup();
+};
+
+// Iterar sobre los datos del historial y actualizar el marcador
+let index = 0;
+const interval = setInterval(() => {
+  if (index >= historyData.length) {
+    clearInterval(interval);
+    return;
+  }
+  updateMarker(index);
+  index++;
+}, 1000); // Actualiza cada segundo (puedes ajustar el intervalo según sea necesario)
+
+// Ajustar el mapa para que se vea la polilínea
+map.fitBounds(polyline.getBounds());
+
+window.recordingCoords = coordenadas;                   
 
   } catch (error) {
     console.error('Error al mostrar el historial:', error);

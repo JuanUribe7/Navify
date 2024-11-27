@@ -79,12 +79,7 @@
             <i class='bx bx-chevron-down icon' :class="{ 'rotate': isReportDropdownOpen }"></i>
           </li>
           <ul v-if="isReportDropdownOpen" class="dropdown2">
-            <li>
-              <router-link to="/reporte">
-                <i class='bx bx-file icon'></i>
-                <span>General</span>
-              </router-link>
-            </li>
+      
             <li>
               <router-link to="/reporte2">
                 <i class='bx bx-file-blank icon'></i>

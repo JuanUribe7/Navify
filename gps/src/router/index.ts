@@ -42,11 +42,6 @@ const routes: Array<RouteRecordRaw> = [
     component: DispositivoView
   },
   {
-    path: '/reporte',
-    name: 'reporte',
-    component: ReporteView
-  },
-  {
     path: '/barralateral',
     name: 'Barralateral',
     component: Barralateral
