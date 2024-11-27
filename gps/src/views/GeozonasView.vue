@@ -744,54 +744,168 @@ onUnmounted(() => {
   background-color: #666;
 }
 
+
+/* Fondo del modal con efecto de desenfoque */
 .modal {
-  display: flex;
   position: fixed;
-  z-index: 1000;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
+/* Contenido del modal */
 .modal-content {
-  background-color: white;
-  margin: 15% auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 80%;
-  max-width: 500px;
-  animation: fadeIn 0.3s;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  animation: slideIn 0.3s ease;
 }
 
+/* Título del modal */
+.modal-content h2 {
+  color: #2d3436;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Botón de cerrar */
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: #a0aec0;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: #f7fafc;
+}
+
+.close:hover {
+  background: #edf2f7;
+  color: #4a5568;
+  transform: rotate(90deg);
+}
+
+/* Input personalizado */
+.inputt {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #edf2f7;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  margin-bottom: 1.5rem;
+  outline: none;
+}
+
+.inputt:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.inputt::placeholder {
+  color: #a0aec0;
+}
+
+/* Botón de guardar */
+.modal-content button {
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--sidebar-color);
+  color: var(--text-colar);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+}
+
+.modal-content button:active {
+  transform: translateY(0);
+}
+
+/* Animaciones */
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
   from {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
+/* Animación de salida */
+.modal.closing {
+  animation: fadeOut 0.3s ease forwards;
 }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
+.modal.closing .modal-content {
+  animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
 .device-list-modal {

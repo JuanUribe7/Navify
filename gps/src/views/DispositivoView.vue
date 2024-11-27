@@ -61,8 +61,9 @@
                 <td>{{ dispositivo.responsible }}</td>
                 <td>{{ dispositivo.imei }}</td>
                 <td>{{ dispositivo.phoneNumber }}</td> <!-- Nueva celda -->
-                <td>{{ dispositivo.routeName }}</td>
                 <td>{{ dispositivo.geozoneName }}</td>
+                <td>{{ dispositivo.routeName }}</td>
+               
                 <td>
                   <i class='bx bx-edit iconD' @click="editarDispositivo(index)"></i>
                   <i class='bx bx-trash iconD' @click="eliminarDispositivo(index)"></i>

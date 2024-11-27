@@ -14,10 +14,6 @@
           <div class="modal-body">
             <form @submit.prevent="changePassword">
               <div class="form-group">
-                <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" v-model="email" required />
-              </div>
-              <div class="form-group">
                 <label for="current-password">Contraseña Actual</label>
                 <input type="password" id="current-password" v-model="currentPassword" required />
               </div>
@@ -29,7 +25,9 @@
                 <label for="confirm-password">Confirmar Nueva Contraseña</label>
                 <input type="password" id="confirm-password" v-model="confirmPassword" required />
               </div>
-              <button type="submit" class="action-button primary">Cambiar Contraseña</button>
+              <button type="submit" class="action-button primary" @click.prevent="changePassword">Cambiar Contraseña</button>
+              <button type="button" class="action-button primary" @click="addEmail">Agregar Correo</button>
+              
             </form>
           </div>
         </div>
@@ -38,7 +36,8 @@
   </template>
   
   <script setup>
-  import { defineEmits, ref } from 'vue';
+  import Swal from 'sweetalert2';
+import { defineEmits, ref } from 'vue';
   const emit = defineEmits(['close']);
   
   const currentPassword = ref('');
@@ -47,14 +46,32 @@
   const email = ref('');
 
   const changePassword = () => {
-    // Lógica para cambiar la contraseña
-    if (newPassword.value === confirmPassword.value) {
-      // Aquí iría la lógica para actualizar la contraseña
+    
+    if (newPassword.value === confirmPassword.value && !email.value) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Correo no ingresado',
+        icon: 'error'
+      });
+    } else {
       console.log('Contraseña cambiada');
       emit('close');
-    } else {
-      alert('Las contraseñas no coinciden');
     }
+  };
+
+  const addEmail = () => {
+    Swal.fire({
+      title: 'Agregar Correo',
+      icon: 'info',
+      html: ` 
+      <input id="email" class="swal2-input" placeholder="Correo" value="${email.value}">
+      `,
+      confirmButtonText: 'OK',
+      preConfirm: () => {
+        email.value = document.getElementById('email').value;
+        console.log(email.value);
+      }
+    });
   };
 
   const close = () => {
@@ -261,6 +278,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 10px;
   }
   
   .action-button:hover {

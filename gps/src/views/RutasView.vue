@@ -3,10 +3,6 @@
     <div class="overlay"></div>
     <NavBar />
     <div id="map" class="map-container"></div>
-    <div class="btns">
-      <button id="saveRoute" class="boton">Guardar Ruta</button>
-      <button id="clearRoute" class="boton">Limpiar</button>
-    </div>
     <div class="hone2">
       <h1>Rutas</h1>
     </div>
@@ -47,12 +43,18 @@
         <h2>Seleccionar Dispositivo</h2>
         <ul class="device-list-modal">
           <li v-for="device in devices" :key="device.id" class="device-item">
-            <input type="checkbox" :checked="selectedDevices.includes(device)" @click.stop="toggleDeviceSelection(device)" />
+            <input type="checkbox" :checked="selectedDevices.includes(device)"
+              @click.stop="toggleDeviceSelection(device)" />
             {{ device.deviceName }}
           </li>
         </ul>
-        <button @click="confirmCreateRoute" class="create-button">Crear Geozona</button>
+        <button @click="confirmCreateRoute" class="create-button">Crear Ruta</button>
       </div>
+    </div>
+
+    <div class="btns">
+      <button id="saveRoute" class="boton">Guardar Ruta</button>
+      <button id="clearRoute" class="boton">Limpiar</button>
     </div>
   </div>
 </template>
@@ -79,7 +81,7 @@ const filteredResults = ref([]);
 const routeName = ref('');
 let routeid = "";
 let routeNamed = ""; // Definir routeName como una referencia reactiva
- // Definir routeName como una referencia reactiva
+// Definir routeName como una referencia reactiva
 const showModal = ref(false);
 const showDeviceModal = ref(false);
 const devices = ref([]);
@@ -180,10 +182,20 @@ const filterResults = () => {
 
 const selectRoute = async (route) => {
   console.log('Ruta seleccionada:', route);
+
   try {
     const response = await axios.get(`http://3.12.147.103/routes/get-route/${route._id}`);
     const routeData = response.data.waypoints;
     waypoints = routeData.map(point => L.latLng(point.lat, point.lng));
+
+    const primerPunto = waypoints[0];
+    const ultimoPunto = waypoints[waypoints.length - 1];
+    console.log('Primer punto:', primerPunto);
+    console.log('Último punto:', ultimoPunto);
+
+    // Crear marcadores para el primer y último punto usando el ícono predeterminado
+    L.marker([primerPunto.lat, primerPunto.lng]).addTo(map).bindPopup('Inicio de la ruta: ' + route.name).openPopup;
+    L.marker([ultimoPunto.lat, ultimoPunto.lng]).addTo(map).bindPopup('Fin de la ruta: ' + route.name).openPopup;
     if (routeControl) {
       map.removeControl(routeControl);
     }
@@ -221,11 +233,12 @@ const closeDeviceModal = () => {
 const saveRoute = async () => {
   if (waypoints.length > 1) {
     const route = waypoints.map(point => ({ lat: point.lat, lng: point.lng }));
+
     try {
       const response = await axios.post('http://3.12.147.103/routes/save-route', { name: routeName.value, waypoints: route });
       console.log('Ruta guardada:', response.data);
-routeNamed = routeName.value;
-routeid = response.data._id;
+      routeNamed = routeName.value;
+      routeid = response.data._id;
       // Mostrar mensaje de confirmación con Swal.fire
       Swal.fire({
         title: 'Ruta guardada',
@@ -327,24 +340,20 @@ const confirmCreateRoute = async () => {
 }
 
 .btns {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-left: 30px;
+  height: 50px;
   position: absolute;
-  top: 460px;
-  right: 800px;
-  z-index: 1000;
-
-  padding: 10px;
+  top: 75%;
+  z-index: 2;
+  display: flex;
   gap: 10px;
-  margin-top: 50px;
 }
 
 .boton {
-  background-color: black;
+  background-color: var(--sidebar-color);
   border: none;
-  color: white;
-  padding: 5px 20px;
+  color: var(--text-color);
+  padding: 5px 15px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -473,17 +482,6 @@ const confirmCreateRoute = async () => {
   width: 15px;
 }
 
-.titulo {
-  display: inline-block;
-  min-width: 100px;
-}
-
-#map {
-  height: calc(100vh - 60px);
-  width: 100%;
-  z-index: 0;
-}
-
 .coordinates-table {
   border-collapse: collapse;
   width: 100%;
@@ -517,30 +515,7 @@ const confirmCreateRoute = async () => {
   justify-content: flex-start;
   position: relative;
   z-index: 1;
-  top: -400px;
-}
-
-.hone {
-  margin-left: 30px;
-  width: 17%;
-  background-color: var(--sidebar-color);
-  height: 280px;
-  position: absolute;
-  top: 35%;
-  z-index: 2;
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid;
-}
-
-.hone h1 {
-  margin-top: 10px;
-  font-size: 16px;
-  text-align: center;
-  color: var(--text-color);
-
+  top: -475px;
 }
 
 .hone2 {
@@ -558,9 +533,32 @@ const confirmCreateRoute = async () => {
 .hone2 h1 {
   text-align: center;
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-color);
 }
+
+.hone {
+  margin-left: 30px;
+  width: 17%;
+  background-color: var(--sidebar-color);
+  height: 280px;
+  position: absolute;
+  top: 30%;
+  z-index: 2;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid;
+}
+
+.hone h1 {
+  margin-top: 10px;
+  font-size: 16px;
+  text-align: center;
+  color: var(--text-color);
+}
+
 
 .group {
   align-items: center;
@@ -777,8 +775,8 @@ const confirmCreateRoute = async () => {
 .modal-content button {
   width: 100%;
   padding: 0.8rem;
-  background: linear-gradient(45deg, #4299e1, #667eea);
-  color: white;
+  background: var(--sidebar-color);
+  color: var(--text-colar);
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -850,5 +848,45 @@ const confirmCreateRoute = async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+}
+
+
+.device-list-modal {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.device-item {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 5px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.device-item:hover {
+  background-color: #f0f0f0;
+}
+
+.create-button {
+  background-color: #4CAF50;
+  /* Verde */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.create-button:hover {
+  background-color: #45a049;
+  /* Verde más oscuro */
 }
 </style>
