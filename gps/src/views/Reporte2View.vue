@@ -472,10 +472,22 @@ onUnmounted(() => {
     color: var(--text-colar);
 }
 
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--sidebar-color);
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--text-colar);
+    border-radius: 3px;
+}
+
 .tabla {
     margin: 20px auto;
     width: 90%;
-
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .tabla table {

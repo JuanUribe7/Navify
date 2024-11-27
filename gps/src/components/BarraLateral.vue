@@ -62,31 +62,25 @@
           </li>
 
           <li class="nav-link">
-            <router-link to="/historial">
-              <i class='bx bx-history icon'></i>
-              <span class="text nav-text">Historial</span>
-            </router-link>
-          </li>
-          <li class="nav-link">
             <router-link to="/rutas">
               <i class='bx bx-trending-up icon'></i>
               <span class="text nav-text">Rutas</span>
             </router-link>
           </li>
-          <li class="nav-link" @click="toggleReportDropdown">
-            <i class='bx bxs-user-account icon'></i>
-            <span class="text nav-text">Reporte</span>
-            <i class='bx bx-chevron-down icon' :class="{ 'rotate': isReportDropdownOpen }"></i>
+
+          <li class="nav-link">
+            <router-link to="/historial">
+              <i class='bx bx-history icon'></i>
+              <span class="text nav-text">Historial</span>
+            </router-link>
           </li>
-          <ul v-if="isReportDropdownOpen" class="dropdown2">
-      
-            <li>
-              <router-link to="/reporte2">
-                <i class='bx bx-file-blank icon'></i>
-                <span>Dispositivo</span>
-              </router-link>
-            </li>
-          </ul>
+          
+          <li class="nav-link">
+            <router-link to="/reporte2" @click="toggleReportDropdown">
+              <i class='bx bxs-user-account icon'></i>
+              <span class="text nav-text">Reporte</span>
+            </router-link>
+          </li>
         </ul>
       </div>
 

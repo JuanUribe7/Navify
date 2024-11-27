@@ -6,7 +6,6 @@ import TiempoReal from '../views/TiempoReal.vue';
 import GeozonasView from '../views/GeozonasView.vue';
 import HistorialView from '../views/HistorialView.vue';
 import DispositivoView from '../views/DispositivoView.vue';
-import ReporteView from '../views/ReporteView.vue';
 import Barralateral from '../components/BarraLateral.vue';
 import Reporte2View from '../views/Reporte2View.vue';
 import RutasView from '../views/RutasView.vue';

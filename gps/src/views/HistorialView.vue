@@ -397,10 +397,6 @@ onMounted(() => {
   border-radius: 50%;
 }
 
-.titulo {
-  display: inline-block;
-  min-width: 100px;
-}
 
 .dropdown {
   position: relative;
@@ -482,42 +478,15 @@ onMounted(() => {
   z-index: 1;
 }
 
-.hone {
-  margin-left: 30px;
-  width: 17%;
-  background-color: var(--sidebar-color);
-  height: 280px;
-  position: absolute;
-  top: 35%;
-  z-index: 2;
-  border-radius: 10px;
-  padding: 10px;
-  border: 1px solid;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.hone h1 {
-  margin-top: 10px;
-  font-size: 16px;
-  position: relative;
-  z-index: 1;
-  color: var(--text-color);
-  flex-shrink: 0;
-  text-align: center;
-}
-
 .hone2 {
   margin-left: 30px;
   background-color: var(--sidebar-color);
   height: 50px;
   position: absolute;
-  top: 30%;
+  top: 25%;
   z-index: 2;
   border-radius: 10px;
   padding: 5px 15px;
-  overflow-y: auto;
   border: 1px solid;
 }
 
@@ -525,10 +494,31 @@ onMounted(() => {
   text-align: center;
   margin-top: 10px;
   font-size: 15px;
-  position: relative;
-  z-index: 1;
   color: var(--text-color);
 }
+
+.hone {
+  margin-left: 30px;
+  width: 17%;
+  background-color: var(--sidebar-color);
+  height: 280px;
+  position: absolute;
+  top: 30%;
+  z-index: 2;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid;
+}
+
+.hone h1 {
+  margin-top: 10px;
+  font-size: 16px;
+  text-align: center;
+  color: var(--text-color);
+}
+
 
 .group {
   display: flex;
