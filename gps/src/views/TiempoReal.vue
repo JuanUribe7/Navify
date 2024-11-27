@@ -186,10 +186,19 @@ function startTracking(device) {
   };
 
   ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
+  const data = JSON.parse(event.data);
+  if (data.lat !== undefined && data.lon !== undefined) {
     showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-  };
-
+  } else {
+    console.error('Datos de ubicación no definidos');
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo obtener la ubicación del dispositivo.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  }
+};
   ws.onclose = () => {
     console.log('Desconectado del servidor WebSocket');
   };
