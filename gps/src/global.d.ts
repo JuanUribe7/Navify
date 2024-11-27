@@ -20,3 +20,8 @@ declare module '*.gif' {
     const value: string;
     export default value;
 }
+
+declare module '../../Back-end/utils/formatearFecha' {
+    export function formatDate(date: Date): string;
+    export function utc(date: string): Date;
+  }
