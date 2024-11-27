@@ -168,7 +168,7 @@ function startTracking(device) {
   if (ws) {
     ws.close();
   }
-  ws = new WebSocket('ws://localhost:3000');
+  ws = new WebSocket('ws://http://3.12.147.103/');
 
   ws.onopen = () => {
     console.log('Conectado al servidor WebSocket');
