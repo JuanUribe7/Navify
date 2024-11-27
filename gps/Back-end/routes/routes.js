@@ -3,18 +3,22 @@ const router = express.Router();
 const Route = require('../models/Route');
 
 // Endpoint para guardar una ruta
-router.post('/save-route', async (req, res) => {
+app.post('/routes/save-route', async (req, res) => {
   try {
-    const { name, waypoints } = req.body;
-    const newRoute = new Route({ name, waypoints });
-    const savedRoute = await newRoute.save();
-    res.status(201).json(savedRoute);
+    const { name, waypoints, summary, instructions } = req.body;
+    const route = new Route({
+      name,
+      coordinates: waypoints,
+      summary,
+      waypoints: waypoints.map(wp => ({ latLng: wp, name: 'Waypoint' })),
+      instructions
+    });
+    await route.save();
+    res.status(201).send(route);
   } catch (error) {
-    console.error('Error al guardar la ruta:', error.message);
-    res.status(500).json({ error: 'Error al guardar la ruta: ' + error.message });
+    res.status(400).send(error);
   }
 });
-
 // Endpoint para obtener una ruta
 router.get('/get-route/:id', async (req, res) => {
   try {

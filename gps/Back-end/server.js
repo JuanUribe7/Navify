@@ -15,10 +15,14 @@ const routes = require('./routes/routes');
 const notificacionRoutes = require('./routes/notificaciones');
 const { WebSocketServer } = require('ws');
 const iniciarWatcher = require('./utils/notificationWatcher');
-const Notification = require('./models/notification'); // Importa el modelo de notificación
+const { Notification } = require('./models/notification'); // Importa el modelo de notificación
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
 const geozoneRoutes = require('./routes/geozone');
 const { Device, DeviceStatus} = require('./models/Device');
+const turf = require('@turf/turf');
+const WebSocket = require('ws');
+const { alert } = require('.models/Alert');
+const { Geozone } = require('./models/Geozone');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -280,30 +284,113 @@ async function SendCommand(commandNumber) {
     }
 }
 
+const wss = new WebSocket.Server({ server });
 
-// Inicia el servidor HTTP en el puerto especificado
-const server=app.listen(HTTP_PORT, () => {
-    console.log(`Servidor HTTP corriendo en http://localhost:${HTTP_PORT}`);
-});
-const wss = new WebSocketServer({ server });
-iniciarWatcher(wss);
+// Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
+
 changeStream.on('change', async (change) => {
-    try {
-      if (change.operationType === 'insert' || change.operationType === 'update') {
-        const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
-        if (latestDeviceStatus) {
-          wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-              client.send(JSON.stringify(latestDeviceStatus));
+  try {
+    if (change.operationType === 'insert' || change.operationType === 'update') {
+      const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
+      if (latestDeviceStatus) {
+        const device = await Device.findOne({ imei: latestDeviceStatus.imei }).populate('geozoneId routeId');
+        if (device) {
+          // Verificar si el dispositivo está fuera de la geozona
+          if (device.geozoneId) {
+            const geozone = device.geozoneId;
+
+            let isOutsideGeozone = false;
+
+            if (geozone.type === 'Polygon') {
+              const points = geozone.vertices.map(point => [point.lon, point.lat]);
+              const polygon = turf.polygon([points]);
+              const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
+              isOutsideGeozone = !turf.booleanPointInPolygon(point, polygon);
+            } else if (geozone.type === 'Circle') {
+              const center = turf.point([geozone.center.lon, geozone.center.lat]);
+              const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
+              const distance = turf.distance(center, point, { units: 'meters' });
+              isOutsideGeozone = distance > geozone.radius;
             }
-          });
+
+            if (isOutsideGeozone) {
+              console.log(`Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`);
+              const notificacion = new Notification({
+                imei: latestDeviceStatus.imei,
+                notificationName: `Fuera de la geozona ${geozone.name}`,
+                notificationTime: latestDeviceStatus.fixTime,
+                notificationType: 'geozone'
+              });
+              const alert = new Alert({
+                imei: latestDeviceStatus.imei,
+                alertName: `Fuera de la geozona ${geozone.name}`,
+                alertTime: latestDeviceStatus.fixTime,
+                alertType: 'geozone'
+              });
+              try {
+                await notificacion.save();
+                await alert.save();
+                console.log(`Notificación de geozona guardada para IMEI: ${latestDeviceStatus.imei}`);
+              } catch (error) {
+                console.error('Error al guardar la notificación:', error);
+              }
+            }
+          }
+
+          // Verificar si el dispositivo está fuera de la ruta
+          if (device.routeId) {
+            const route = device.routeId;
+            const waypoints = route.coordinates.map(point => [point.lng, point.lat]);
+            const line = turf.lineString(coordinates);
+            const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
+
+            // Definir la tolerancia (por ejemplo, 200 metros)
+            const tolerance = 0.2; // 0.2 kilómetros = 200 metros
+
+            // Verificar si el punto está dentro de la tolerancia de la ruta
+            const distance = turf.pointToLineDistance(point, line, { units: 'kilometers' });
+            const isOutsideRoute = distance > tolerance;
+
+            if (isOutsideRoute) {
+              console.log(`Dispositivo ${device.deviceName} está fuera de la ruta ${route.name}`);
+              const notificacion = new Notification({
+                imei: latestDeviceStatus.imei,
+                notificationName: `Fuera de la ruta ${route.name}`,
+                notificationTime: latestDeviceStatus.fixTime,
+                notificationType: 'route'
+              });
+              const alert = new Alert({
+                imei: latestDeviceStatus.imei,
+                alertName: `Fuera de la ruta ${route.name}`,
+                alertTime: latestDeviceStatus.fixTime,
+                alertType: 'route'
+              });
+              try {
+                await notificacion.save();
+                await alert.save();
+                console.log(`Notificación de ruta guardada para IMEI: ${latestDeviceStatus.imei}`);
+              } catch (error) {
+                console.error('Error al guardar la notificación:', error);
+              }
+            }
+          }
         }
+
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(latestDeviceStatus));
+          }
+        });
       }
-    } catch (error) {
-      console.error('Error al obtener el estado del dispositivo:', error);
     }
-  });
+  } catch (error) {
+    console.error('Error al obtener el estado del dispositivo:', error);
+  }
+});
+
+
+
 wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');

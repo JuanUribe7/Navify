@@ -5,8 +5,8 @@ const deviceSchema = new mongoose.Schema({
     deviceName: { type: String, required: false },
     responsible: { type: String, required: false },
     phoneNumber: { type: String, required: false },
-    routeName: { type: String, required: false }, 
-    geozoneName: { type: String, required: false } 
+    routeId: { type: String, required: false },
+    geozoneId: { type: mongoose.Schema.Types.ObjectId, ref: 'Geozone' } // Referencia al modelo Geozone
 }, { minimize: false });
 
 const deviceStatusSchema = new mongoose.Schema({
