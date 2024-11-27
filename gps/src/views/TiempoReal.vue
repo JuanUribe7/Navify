@@ -115,8 +115,17 @@ function filterResults() {
 
 // Muestra un dispositivo seleccionado en el mapa
 async function showDeviceOnMap(data) {
-  const { lat, lon, fixTime, speed, ignition, charging, deviceName } = data;
-
+  const { lat, lon, fixTime, speed, ignition, charging, deviceName:name } = data;
+  if (lat === undefined || lon === undefined) {
+    console.error('Latitud o longitud no definida');
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo obtener la ubicación del dispositivo.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
   if (!map) {
     console.error('El mapa no está inicializado');
     return;
@@ -129,7 +138,7 @@ async function showDeviceOnMap(data) {
     }
   });
 
-  deviceName.value = deviceName;
+  deviceName.value = name;
   fixTimeDOM.value = fixTime;
   speedDOM.value = speed;
   ignitionDOM.value = ignition ? 'Sí' : 'No';
@@ -143,7 +152,7 @@ async function showDeviceOnMap(data) {
 
   // Mostrar información del dispositivo en un popup
   marker.bindPopup(`
-    <b>${deviceName}</b><br>
+    <b>${name}</b><br>
     Tiempo: ${new Date(fixTime).toLocaleString()}<br>
     Velocidad: ${speed} km/h <br>
     Encendido: ${ignition ? 'Sí' : 'No'}<br>
