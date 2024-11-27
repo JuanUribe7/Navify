@@ -3,7 +3,7 @@ const router = express.Router();
 const Route = require('../models/Route');
 
 // Endpoint para guardar una ruta
-router.post('/routes/save-route', async (req, res) => {
+router.post('/save-route', async (req, res) => {
   try {
     const { name, waypoints, summary, instructions } = req.body;
     const route = new Route({
