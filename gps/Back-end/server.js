@@ -292,7 +292,7 @@ wss.on('connection', async (ws) => {
     console.log('Cliente WebSocket conectado');
 
     // Puedes manejar mensajes del cliente si es necesario
-    const lastDevice = await Device.findOne().sort({ _id: -1 }).exec();
+    const lastDevice = await DeviceStatus.findOne().sort({ _id: -1 }).exec();
     if (lastDevice) {
         ws.send(JSON.stringify(lastDevice));
     }
