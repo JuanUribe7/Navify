@@ -307,6 +307,8 @@ wss.on('connection', async (ws) => {
 
         if (deviceData) {
             ws.send(JSON.stringify(deviceData));
+        }else {
+            console.log(`No se encontraron datos para el IMEI: ${imei}`);
         }
     });
 
