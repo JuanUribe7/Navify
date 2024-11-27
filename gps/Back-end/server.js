@@ -303,7 +303,7 @@ wss.on('connection', async (ws) => {
         const { imei } = JSON.parse(message);
 
         // Obtener datos del dispositivo desde la base de datos
-        const deviceData = await Device.findOne({ imei });
+        const deviceData = await DeviceStatus.findOne({ imei });
 
         if (deviceData) {
             ws.send(JSON.stringify(deviceData));
