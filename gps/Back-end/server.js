@@ -10,19 +10,16 @@ const authRoutes = require('./routes/auth');
 const deviceRoutes = require('./routes/devices');
 const Gt06 = require('./gt06'); // Asegúrate de tener el módulo Gt06
 const mqtt = require('mqtt');
-const getCrc16 = require('./crc16');
 const routes = require('./routes/routes');
 const notificacionRoutes = require('./routes/notificaciones');
-const { WebSocketServer } = require('ws');
 const iniciarWatcher = require('./utils/notificationWatcher');
-const { Notification } = require('./models/notification'); // Importa el modelo de notificación
+const  Notification  = require('./models/notification'); // Importa el modelo de notificación
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
 const geozoneRoutes = require('./routes/geozone');
 const { Device, DeviceStatus} = require('./models/Device');
 const turf = require('@turf/turf');
 const WebSocket = require('ws');
-const { alert } = require('.models/Alert');
-const { Geozone } = require('./models/Geozone');
+
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
