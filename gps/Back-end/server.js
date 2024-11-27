@@ -288,29 +288,20 @@ const server=app.listen(HTTP_PORT, () => {
 const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
 
-wss.on('connection', async (ws) => {
+wss.on('connection', (ws) => {
     console.log('Cliente WebSocket conectado');
-
-    // Puedes manejar mensajes del cliente si es necesario
-    const lastDevice = await DeviceStatus.findOne().sort({ _id: -1 }).exec();
-    if (lastDevice) {
-        ws.send(JSON.stringify(lastDevice));
-    }
-
-    // Manejar mensajes del cliente
-    ws.on('message', async (message) => {
-        console.log('Mensaje recibido:', message);
-        const { imei } = JSON.parse(message);
-
-        // Obtener datos del dispositivo desde la base de datos
-        const deviceData = await DeviceStatus.findOne({ imei });
-
-        if (deviceData) {
-            ws.send(JSON.stringify(deviceData));
-        }else {
-            console.log(`No se encontraron datos para el IMEI: ${imei}`);
+  
+    // Enviar el documento más reciente periódicamente
+    const intervalId = setInterval(async () => {
+      try {
+        const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
+        if (latestDeviceStatus) {
+          ws.send(JSON.stringify(latestDeviceStatus));
         }
-    });
+      } catch (error) {
+        console.error('Error al obtener el estado del dispositivo:', error);
+      }
+    }, 5000);
 
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
