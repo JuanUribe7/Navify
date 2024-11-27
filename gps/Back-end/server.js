@@ -19,7 +19,7 @@ const geozoneRoutes = require('./routes/geozone');
 const { Device, DeviceStatus} = require('./models/Device');
 const turf = require('@turf/turf');
 const WebSocket = require('ws');
-
+const http = require('http');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
