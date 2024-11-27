@@ -288,10 +288,16 @@ const server=app.listen(HTTP_PORT, () => {
 const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
 
-wss.on('connection', (ws) => {
+wss.on('connection', async (ws) => {
     console.log('Cliente WebSocket conectado');
 
     // Puedes manejar mensajes del cliente si es necesario
+    const lastDevice = await Device.findOne().sort({ _id: -1 }).exec();
+    if (lastDevice) {
+        ws.send(JSON.stringify(lastDevice));
+    }
+
+    // Manejar mensajes del cliente
     ws.on('message', async (message) => {
         console.log('Mensaje recibido:', message);
         const { imei } = JSON.parse(message);
@@ -303,6 +309,7 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify(deviceData));
         }
     });
+
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
     });
