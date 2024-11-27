@@ -191,12 +191,7 @@ function startTracking(device) {
     showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
   } else {
     console.error('Datos de ubicación no definidos');
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo obtener la ubicación del dispositivo.',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
+    
   }
 };
   ws.onclose = () => {

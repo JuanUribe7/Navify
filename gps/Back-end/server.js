@@ -301,7 +301,7 @@ wss.on('connection', (ws) => {
       } catch (error) {
         console.error('Error al obtener el estado del dispositivo:', error);
       }
-    }, 5000);
+    }, 2000);
 
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
