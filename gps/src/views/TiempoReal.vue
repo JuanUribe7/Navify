@@ -171,9 +171,15 @@ async function showDeviceOnMap(data) {
   console.log('Marcador añadido y mapa centrado');
   Swal.close(); // Cerrar el indicador de carga
 }
-
-function startTracking(device) {
+async function startTracking(device) {
   // Conectar al servidor WebSocket
+  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
+    }
+    const data = await response.json();
+    showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+
   if (ws) {
     ws.close();
   }
