@@ -287,22 +287,24 @@ const server=app.listen(HTTP_PORT, () => {
 });
 const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
-
-wss.on('connection', (ws) => {
-    console.log('Cliente WebSocket conectado');
-  
-    // Enviar el documento más reciente periódicamente
-    const intervalId = setInterval(async () => {
-      try {
+const changeStream = DeviceStatus.watch();
+changeStream.on('change', async (change) => {
+    try {
+      if (change.operationType === 'insert' || change.operationType === 'update') {
         const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
         if (latestDeviceStatus) {
-          ws.send(JSON.stringify(latestDeviceStatus));
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify(latestDeviceStatus));
+            }
+          });
         }
-      } catch (error) {
-        console.error('Error al obtener el estado del dispositivo:', error);
       }
-    }, 500);
-
+    } catch (error) {
+      console.error('Error al obtener el estado del dispositivo:', error);
+    }
+  });
+wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
     });
