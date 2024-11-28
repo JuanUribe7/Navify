@@ -58,7 +58,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
@@ -82,6 +81,7 @@ const filteredResults = ref([]);
 const routeName = ref('');
 let routeid = "";
 let routeNamed = ""; // Definir routeName como una referencia reactiva
+// Definir routeName como una referencia reactiva
 const showModal = ref(false);
 const showDeviceModal = ref(false);
 const devices = ref([]);
@@ -185,7 +185,7 @@ const selectRoute = async (route) => {
 
   try {
     const response = await axios.get(`http://3.12.147.103/routes/get-route/${route._id}`);
-    const routeData = response.data.coordinates;
+    const routeData = response.data.waypoints;
     waypoints = routeData.map(point => L.latLng(point.lat, point.lng));
 
     const primerPunto = waypoints[0];
@@ -230,35 +230,15 @@ const closeDeviceModal = () => {
   showDeviceModal.value = false;
 };
 
-const saveRoute = async (e) => {
+const saveRoute = async () => {
   if (waypoints.length > 1) {
-    if (!e.routes || e.routes.length === 0) {
-      console.error('No routes found');
-      alert('No se encontraron rutas. Por favor, intenta de nuevo.');
-      return;
-    }
-    const routes = e.routes;
-    const coordinates = routes[0].coordinates;
-    const summary = routes[0].summary;
-    const instructions = routes[0].instructions;
+    const route = waypoints.map(point => ({ lat: point.lat, lng: point.lng }));
 
     try {
-      
-
-      // Imprimir los datos enviados
-      console.log('Datos enviados:', {
-        name: routeName.value,
-        coordinates: coordinates.map(coord => ({ lat: coord.lat, lng: coord.lng })),
-        summary,
-        waypoints: waypoints.map((wp, index) => ({ latLng: wp, name: `Waypoint ${index + 1}` })),
-        instructions: instructions.map(instr => ({
-          text: instr.text,
-          distance: instr.distance,
-          time: instr.time
-        }))
-      });
-
-     
+      const response = await axios.post('http://3.12.147.103/routes/save-route', { name: routeName.value, waypoints: route });
+      console.log('Ruta guardada:', response.data);
+      routeNamed = routeName.value;
+      routeid = response.data._id;
       // Mostrar mensaje de confirmación con Swal.fire
       Swal.fire({
         title: 'Ruta guardada',
@@ -321,7 +301,7 @@ const confirmCreateRoute = async () => {
     console.log('Datos de la ruta a enviar con dispositivos:', routeData);
 
     // Hacer el PUT para actualizar el parámetro routeName de los dispositivos seleccionados
-    const putResponse = await axios.put(`http://3.12.147.103/api/devices/update-route/${routeid}`, routeData);
+    const putResponse = await axios.put(`http://3.12.147.103/devices/update-route/${routeid}`, routeData);
     console.log('Dispositivos actualizados:', putResponse.data);
 
     // Mostrar mensaje de confirmación con Swal.fire
@@ -344,6 +324,7 @@ const confirmCreateRoute = async () => {
   }
 };
 </script>
+
 
 <style scoped>
 .map-container {
