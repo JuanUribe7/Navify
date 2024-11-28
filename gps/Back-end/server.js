@@ -294,7 +294,7 @@ changeStream.on('change', async (change) => {
     if (change.operationType === 'insert' || change.operationType === 'update') {
       const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
       if (latestDeviceStatus) {
-        const device = await Device.findOne({ imei: latestDeviceStatus.imei }).populate('geozoneId routeId');
+        const device = await Device.findOne({ imei: latestDeviceStatus.imei }).populate('geozoneId');
         if (device) {
           // Verificar si el dispositivo está fuera de la geozona
           if (device.geozoneId) {
