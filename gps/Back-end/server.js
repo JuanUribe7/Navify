@@ -234,8 +234,7 @@ app.use('/notificaciones', notificacionRoutes);
 app.use('/geozone', geozoneRoutes);
 
 
-const wss = new WebSocketServer({ server });
-iniciarWatcher(wss);
+
 
 
 async function SendCommand(commandNumber) {
@@ -347,6 +346,8 @@ changeStream.on('change', async (change) => {
           
         }
 
+
+
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(latestDeviceStatus));
@@ -360,7 +361,8 @@ changeStream.on('change', async (change) => {
 });
 
 app.use(express.static(path.join(__dirname, 'dist' )));
-
+const wss = new WebSocketServer({ server });
+iniciarWatcher(wss);
 wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('Cliente WebSocket desconectado');
