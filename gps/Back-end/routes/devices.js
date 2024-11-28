@@ -16,7 +16,15 @@ router.get('/', async (req, res) => {
     }
 });
 
-
+router.get('/status', async (req, res) => {
+    try {
+      const deviceStatuses = await DeviceStatus.find();
+      res.status(200).json(deviceStatuses);
+    } catch (error) {
+      console.error('Error al obtener los datos de DeviceStatus:', error);
+      res.status(500).json({ error: 'Error al obtener los datos de DeviceStatus' });
+    }
+  });
 
 router.post('/save-history', async (req, res) => {
     try {

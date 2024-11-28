@@ -360,15 +360,16 @@ changeStream.on('change', async (change) => {
     console.error('Error al obtener el estado del dispositivo:', error);
   }
 });
-
-app.use(express.static(path.join(__dirname, 'dist' )));
 const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
 wss.on('connection', (ws) => {
-    ws.on('close', () => {
-        console.log('Cliente WebSocket desconectado');
-    });
+  ws.on('close', () => {
+      console.log('Cliente WebSocket desconectado');
+  });
 });
+app.use(express.static(path.join(__dirname, 'dist' )));
+
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
