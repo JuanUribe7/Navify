@@ -212,40 +212,9 @@ async function startTracking(device) {
   const deviceData = await deviceResponse.json();
   deviceName.value = deviceData.deviceName; // Actualizar el nombre del dispositivo
 
-  if (ws) {
-    ws.close();
+ 
   }
-  ws = new WebSocket('ws://3.12.147.103');
 
-  ws.onopen = () => {
-    console.log('Conectado al servidor WebSocket');
-    // Enviar el IMEI del dispositivo para obtener actualizaciones
-    ws.send(JSON.stringify({ imei: device.imei }));
-  };
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.lat !== undefined && data.lon !== undefined) {
-      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-    } else {
-      console.error('Datos de ubicación no definidos');
-    }
-  };
-
-  ws.onclose = () => {
-    console.log('Desconectado del servidor WebSocket');
-  };
-
-  ws.onerror = (error) => {
-    console.error('Error en la conexión WebSocket:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
-  };
-}
 
 const mostrarDispositivosEnMapa = () => {
   devices.value.forEach(device => {
