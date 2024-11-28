@@ -118,7 +118,8 @@ router.post('/', async (req, res) => {
             imei,
             phoneNumber,
             routeId: 'Ruta no asignada', 
-            geozoneId: mongoose.Types.ObjectId("67489a6a4f4620543cc094c3")        });
+            geozoneId: new mongoose.Types.ObjectId("67489a6a4f4620543cc094c3") // Utilizar 'new' para crear un ObjectId
+        });
 
         const dispositivoGuardado = await nuevoDispositivo.save();
         res.status(201).json(dispositivoGuardado);
