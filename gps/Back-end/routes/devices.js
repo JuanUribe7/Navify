@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 
+
 router.post('/save-history', async (req, res) => {
     try {
         const { imei, fixTime, lat, lon, speed } = req.body;
@@ -167,6 +168,7 @@ router.get('/status/:imei', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el estado del dispositivo' });
     }
 });
+
 
 // Endpoint para obtener el historial de un dispositivo por IMEI
 router.get('/history/:imei', async (req, res) => {

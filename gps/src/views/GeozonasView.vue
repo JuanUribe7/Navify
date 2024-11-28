@@ -70,7 +70,7 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
-const map = ref(null);
+let map = ref(null);
 const drawnItems = ref(new L.FeatureGroup());
 const searchQuery = ref('');
 const geozones = ref([]);
@@ -130,50 +130,26 @@ const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
 };
 
-const initMap = () => {
-  if (!map.value) {
-    map.value = L.map('map').setView([10.96854, -74.78132], 12);
+function initMap() {
+  map.value = L.map('map').setView([10.9685, -74.7813], 16);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(map.value);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map.value);
+}
 
-    drawnItems.value.addTo(map.value);
-
-    map.value.pm.addControls({
-      position: 'topright',
-      drawPolygon: true,
-      drawPolyline: true,
-      drawRectangle: true,
-      drawCircle: true,
-      drawCircleMarker: false,
-      drawMarker: false,
-      editMode: true,
-      deleteMode: true,
-      createZone: true,
-    });
-
-    map.value.on('pm:create', (e) => {
-      const layer = e.layer;
-      drawnItems.value.addLayer(layer);
-
-      if (layer instanceof L.Circle) {
-        coordinates = {
-          center: layer.getLatLng(),
-          radius: layer.getRadius()
-        };
-        console.log('Circunferencia creada - Centro:', coordinates.center, 'Radio:', coordinates.radius);
-      } else {
-        coordinates = layer.getLatLngs();
-        console.log('Coordenadas de la geozona creada:', coordinates);
-      }
-
-      showModal.value = true; // Mostrar el modal para guardar la geozona
-    });
-
-    map.value.on('pm:remove', (e) => {
-      console.log('Forma eliminada:', e.layer);
-    });
+const cargarDispositivos = async () => {
+  try {
+    const response = await axios.get('http://3.12.147.103/devices/status');
+    if (response.status === 200) {
+      devices.value = response.data;
+      console.log('Dispositivos cargados:', devices.value);
+      mostrarDispositivosEnMapa();
+    } else {
+      throw new Error('Error en la respuesta de la API');
+    }
+  } catch (error) {
+    console.error('Error al cargar dispositivos:', error);
   }
 };
 
@@ -184,6 +160,17 @@ const storeShape = (layer, geozoneId) => {
   geozoneShapes.value[geozoneId].push(layer);
 };
 
+const mostrarDispositivosEnMapa = () => {
+
+    if (devices.value.lat && devices.value.lon) {
+      console.log(`Mostrando dispositivo: ${devices.value.deviceName} en lat: ${devices.value.lat}, lon: ${devices.value.lon}`);
+      const marker = L.marker([devices.value.lat, devices.value.lon]).addTo(map);
+      marker.bindPopup(`<b>${devices.value.deviceName}</b><br>Lat: ${devices.value.lat}<br>Lon: ${devices.value.lon}`).openPopup();
+    } else {
+      console.warn(`Dispositivo sin coordenadas: ${devices.value.deviceName}`);
+    }
+
+};
 const showGeozoneOnMap = (geozone) => {
   if (!map.value) {
     console.error('El mapa no está inicializado');
@@ -272,19 +259,7 @@ const cargarGeozonas = async () => {
   }
 };
 
-const cargarDispositivos = async () => {
-  try {
-    const response = await axios.get('http://3.12.147.103/devices');
-    if (response.status === 200) {
-      devices.value = response.data;
-      console.log('Dispositivos cargados:', devices.value);
-    } else {
-      throw new Error('Error en la respuesta de la API');
-    }
-  } catch (error) {
-    console.error('Error al cargar dispositivos:', error);
-  }
-};
+
 
 const openModal = () => {
   showDeviceModal.value = true;
@@ -395,9 +370,10 @@ const confirmCreateGeozona = async () => {
 };
 
 onMounted(() => {
+   initMap();
   cargarGeozonas();
   cargarDispositivos(); // Cargar los dispositivos al montar el componente
-  initMap();
+
   typeEffect();
 });
 
