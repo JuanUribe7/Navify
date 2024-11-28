@@ -87,6 +87,7 @@ let typingInterval;
 let routingControl = null;
 let geozoneMarker = null;
 let coordinates = null;
+let ws = null;
 
 const showModal = ref(false);
 const showDeviceModal = ref(false);
@@ -145,12 +146,46 @@ const cargarDispositivos = async () => {
       devices.value = response.data;
       console.log('Dispositivos cargados:', devices.value);
       mostrarDispositivosEnMapa();
+      
     } else {
       throw new Error('Error en la respuesta de la API');
     }
   } catch (error) {
     console.error('Error al cargar dispositivos:', error);
+  }if (ws) {
+    ws.close();
   }
+  ws = new WebSocket('ws://3.12.147.103');
+
+  ws.onopen = () => {
+    console.log('Conectado al servidor WebSocket');
+    // Enviar el IMEI del dispositivo para obtener actualizaciones
+    ws.send(JSON.stringify({ imei: devices.value.imei }));
+  };
+
+  ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.lat !== undefined && data.lon !== undefined) {
+    mostrarDispositivosEnMapa(); // Llamar a showDeviceOnMap con los datos recibidos
+  } else {
+    console.error('Datos de ubicación no definidos');
+    
+  }
+};
+  ws.onclose = () => {
+    console.log('Desconectado del servidor WebSocket');
+  };
+
+  ws.onerror = (error) => {
+    console.error('Error en la conexión WebSocket:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  };
+
 };
 
 const storeShape = (layer, geozoneId) => {
@@ -159,18 +194,18 @@ const storeShape = (layer, geozoneId) => {
   }
   geozoneShapes.value[geozoneId].push(layer);
 };
-
 const mostrarDispositivosEnMapa = () => {
-
-    if (devices.value.lat && devices.value.lon) {
-      console.log(`Mostrando dispositivo: ${devices.value.deviceName} en lat: ${devices.value.lat}, lon: ${devices.value.lon}`);
-      const marker = L.marker([devices.value.lat, devices.value.lon]).addTo(map);
-      marker.bindPopup(`<b>${devices.value.deviceName}</b><br>Lat: ${devices.value.lat}<br>Lon: ${devices.value.lon}`).openPopup();
+  devices.value.forEach(device => {
+    if (device.lat && device.lon) {
+      console.log(`Mostrando dispositivo: ${device.deviceName} en lat: ${device.lat}, lon: ${device.lon}`);
+      const marker = L.marker([device.lat, device.lon]).addTo(map.value);
+      marker.bindPopup(`<b>${device.deviceName}</b><br>Lat: ${device.lat}<br>Lon: ${device.lon}`).openPopup();
     } else {
-      console.warn(`Dispositivo sin coordenadas: ${devices.value.deviceName}`);
+      console.warn(`Dispositivo sin coordenadas: ${device.deviceName}`);
     }
-
+  });
 };
+
 const showGeozoneOnMap = (geozone) => {
   if (!map.value) {
     console.error('El mapa no está inicializado');
