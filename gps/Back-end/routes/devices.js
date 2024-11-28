@@ -146,7 +146,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Endpoint para obtener el estado de un dispositivo por IMEI
-router.get('/devices/status/:imei', async (req, res) => {
+router.get('/status/:imei', async (req, res) => {
     try {
         const { imei } = req.params;
         const deviceStatus = await DeviceStatus.findOne({ imei });
