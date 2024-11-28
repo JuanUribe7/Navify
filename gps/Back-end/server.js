@@ -290,19 +290,21 @@ async function SendCommand(commandNumber) {
 
 
 
-// Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
-
 changeStream.on('change', async (change) => {
   try {
+    console.log('Cambio detectado:', change);
     if (change.operationType === 'insert' || change.operationType === 'update') {
       const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
+      console.log('Último estado del dispositivo:', latestDeviceStatus);
       if (latestDeviceStatus) {
         const device = await Device.findOne({ imei: latestDeviceStatus.imei }).populate('geozoneId');
+        console.log('Dispositivo encontrado:', device);
         if (device) {
           // Verificar si el dispositivo está fuera de la geozona
           if (device.geozoneId) {
             const geozone = device.geozoneId;
+            console.log('Geozona encontrada:', geozone);
 
             let isOutsideGeozone = false;
 
@@ -311,11 +313,13 @@ changeStream.on('change', async (change) => {
               const polygon = turf.polygon([points]);
               const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
               isOutsideGeozone = !turf.booleanPointInPolygon(point, polygon);
+              console.log('Punto dentro del polígono:', !isOutsideGeozone);
             } else if (geozone.type === 'Circle') {
               const center = turf.point([geozone.center.lon, geozone.center.lat]);
               const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
               const distance = turf.distance(center, point, { units: 'meters' });
               isOutsideGeozone = distance > geozone.radius;
+              console.log('Distancia desde el centro:', distance, 'Fuera de la geozona:', isOutsideGeozone);
             }
 
             if (isOutsideGeozone) {
@@ -339,27 +343,25 @@ changeStream.on('change', async (change) => {
               } catch (error) {
                 console.error('Error al guardar la notificación:', error);
               }
+            } else {
+              console.log(`Dispositivo ${device.deviceName} está dentro de la geozona ${geozone.name}`);
             }
+          } else {
+            console.log('El dispositivo no tiene una geozona asignada.');
           }
-
-         
-            
-          
+        } else {
+          console.log('Dispositivo no encontrado.');
         }
-
-
-
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(latestDeviceStatus));
-          }
-        });
+      } else {
+        console.log('No se encontró el último estado del dispositivo.');
       }
     }
   } catch (error) {
-    console.error('Error al obtener el estado del dispositivo:', error);
+    console.error('Error al procesar el cambio:', error);
   }
 });
+
+
 const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
 wss.on('connection', (ws) => {
