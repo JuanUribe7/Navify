@@ -197,11 +197,19 @@ async function showDeviceOnMap(data) {
 async function startTracking(device) {
   // Conectar al servidor WebSocket
   const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
-    if (!response.ok) {
-      throw new Error('Error en la respuesta de la API');
-    }
-    const data = await response.json();
-    showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+  if (!response.ok) {
+    throw new Error('Error en la respuesta de la API');
+  }
+  const data = await response.json();
+  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+
+  // Obtener el nombre del dispositivo desde la colección Device
+  const deviceResponse = await fetch(`http://3.12.147.103/devices/${device.imei}`);
+  if (!deviceResponse.ok) {
+    throw new Error('Error en la respuesta de la API');
+  }
+  const deviceData = await deviceResponse.json();
+  deviceName.value = deviceData.deviceName; // Actualizar el nombre del dispositivo
 
   if (ws) {
     ws.close();
@@ -215,14 +223,14 @@ async function startTracking(device) {
   };
 
   ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.lat !== undefined && data.lon !== undefined) {
-    showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-  } else {
-    console.error('Datos de ubicación no definidos');
-    
-  }
-};
+    const data = JSON.parse(event.data);
+    if (data.lat !== undefined && data.lon !== undefined) {
+      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
+    } else {
+      console.error('Datos de ubicación no definidos');
+    }
+  };
+
   ws.onclose = () => {
     console.log('Desconectado del servidor WebSocket');
   };

@@ -453,7 +453,6 @@ onMounted(() => {
 
   typeEffect();
 });
-
 onUnmounted(() => {
   clearTimeout(typingInterval);
   if (routingControl) {

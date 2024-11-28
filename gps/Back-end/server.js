@@ -333,6 +333,7 @@ changeStream.on('change', async (change) => {
 
             if (isOutsideGeozone) {
               console.log(`Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`);
+              
               const notificacion = new Notification({
                 imei: latestDeviceStatus.imei,
                 notificationName: `Fuera de la geozona ${geozone.name}`,
