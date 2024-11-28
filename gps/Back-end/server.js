@@ -318,7 +318,11 @@ changeStream.on('change', async (change) => {
             let isOutsideGeozone = false;
 
             if (geozone.type === 'Polygon') {
-              const points = geozone.vertices.map(point => [point.lng, point.lat]);
+              let points = geozone.vertices.map(point => [point.lng, point.lat]);
+              // Asegurarse de que el primer y último punto sean iguales
+              if (points[0][0] !== points[points.length - 1][0] || points[0][1] !== points[points.length - 1][1]) {
+                points.push(points[0]);
+              }
               const polygon = turf.polygon([points]);
               const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
               isOutsideGeozone = !turf.booleanPointInPolygon(point, polygon);
@@ -333,7 +337,6 @@ changeStream.on('change', async (change) => {
 
             if (isOutsideGeozone) {
               console.log(`Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`);
-              
               const notificacion = new Notification({
                 imei: latestDeviceStatus.imei,
                 notificationName: `Fuera de la geozona ${geozone.name}`,
@@ -370,6 +373,7 @@ changeStream.on('change', async (change) => {
     console.error('Error al procesar el cambio:', error);
   }
 });
+
 
 
 const wss = new WebSocketServer({ server });
