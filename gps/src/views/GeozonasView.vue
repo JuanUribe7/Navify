@@ -70,7 +70,7 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
-let map = ref(null);
+const map = ref(null);
 const drawnItems = ref(new L.FeatureGroup());
 const searchQuery = ref('');
 const geozones = ref([]);
@@ -131,13 +131,7 @@ const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
 };
 
-function initMap() {
-  map.value = L.map('map').setView([10.9685, -74.7813], 16);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map.value);
-}
 
 const cargarDispositivos = async () => {
   try {
@@ -188,12 +182,7 @@ const cargarDispositivos = async () => {
 
 };
 
-const storeShape = (layer, geozoneId) => {
-  if (!geozoneShapes.value[geozoneId]) {
-    geozoneShapes.value[geozoneId] = [];
-  }
-  geozoneShapes.value[geozoneId].push(layer);
-};
+
 const mostrarDispositivosEnMapa = () => {
   devices.value.forEach(device => {
     if (device.lat && device.lon) {
@@ -204,6 +193,75 @@ const mostrarDispositivosEnMapa = () => {
       console.warn(`Dispositivo sin coordenadas: ${device.deviceName}`);
     }
   });
+};
+
+const cargarGeozonas = async () => {
+  try {
+    const response = await fetch('http://3.12.147.103/geozone/geozones');
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
+    }
+    const data = await response.json();
+    geozones.value = data;
+    console.log('Geozonas cargadas:', geozones.value);
+    filteredResults.value = geozones.value;
+  } catch (error) {
+    console.error('Error al cargar geozonas:', error);
+  }
+};
+
+const initMap = () => {
+  if (!map.value) {
+    map.value = L.map('map').setView([10.96854, -74.78132], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map.value);
+
+    drawnItems.value.addTo(map.value);
+
+    map.value.pm.addControls({
+      position: 'topright',
+      drawPolygon: true,
+      drawPolyline: true,
+      drawRectangle: true,
+      drawCircle: true,
+      drawCircleMarker: false,
+      drawMarker: false,
+      editMode: true,
+      deleteMode: true,
+      createZone: true,
+    });
+
+    map.value.on('pm:create', (e) => {
+      const layer = e.layer;
+      drawnItems.value.addLayer(layer);
+
+      if (layer instanceof L.Circle) {
+        coordinates = {
+          center: layer.getLatLng(),
+          radius: layer.getRadius()
+        };
+        console.log('Circunferencia creada - Centro:', coordinates.center, 'Radio:', coordinates.radius);
+      } else {
+        coordinates = layer.getLatLngs();
+        console.log('Coordenadas de la geozona creada:', coordinates);
+      }
+
+      showModal.value = true; // Mostrar el modal para guardar la geozona
+    });
+
+    map.value.on('pm:remove', (e) => {
+      console.log('Forma eliminada:', e.layer);
+    });
+  }
+};
+
+const storeShape = (layer, geozoneId) => {
+  if (!geozoneShapes.value[geozoneId]) {
+    geozoneShapes.value[geozoneId] = [];
+  }
+  geozoneShapes.value[geozoneId].push(layer);
 };
 
 const showGeozoneOnMap = (geozone) => {
@@ -278,22 +336,6 @@ const filterResults = () => {
     return item.name.toLowerCase().includes(query);
   });
 };
-
-const cargarGeozonas = async () => {
-  try {
-    const response = await fetch('http://3.12.147.103/geozone/geozones');
-    if (!response.ok) {
-      throw new Error('Error en la respuesta de la API');
-    }
-    const data = await response.json();
-    geozones.value = data;
-    console.log('Geozonas cargadas:', geozones.value);
-    filteredResults.value = geozones.value;
-  } catch (error) {
-    console.error('Error al cargar geozonas:', error);
-  }
-};
-
 
 
 const openModal = () => {
