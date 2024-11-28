@@ -131,22 +131,95 @@ const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
 };
 
+async function showDeviceOnMap(data) {
+  const { lat, lon, fixTime, speed, ignition, charging, deviceName:name } = data;
+  if (lat === undefined || lon === undefined) {
+    console.error('Latitud o longitud no definida');
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo obtener la ubicación del dispositivo.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+  if (!map) {
+    console.error('El mapa no está inicializado');
+    return;
+  }
 
+  // Limpiar marcadores existentes
+  map.eachLayer((layer) => {
+    if (layer instanceof L.Marker) {
+      map.removeLayer(layer);
+    }
+  });
 
+  deviceName.value = name;
+  fixTimeDOM.value = fixTime;
+  speedDOM.value = speed;
+  ignitionDOM.value = ignition ? 'Sí' : 'No';
+  chargingDOM.value = charging ? 'Sí' : 'No';
+
+  // Centrar el mapa en la ubicación del dispositivo
+  map.setView([lat, lon], 18);
+
+  // Añadir un nuevo marcador para el dispositivo
+  const marker = L.marker([lat, lon]).addTo(map);
+
+  // Mostrar información del dispositivo en un popup
+  marker.bindPopup(`
+    <b>${name}</b><br>
+    Tiempo: ${new Date(fixTime).toLocaleString()}<br>
+    Velocidad: ${speed} km/h <br>
+    Encendido: ${ignition ? 'Sí' : 'No'}<br>
+    Cargando: ${charging ? 'Sí' : 'No'}<br>
+  `).openPopup();
+
+  // Forzar una actualización del mapa
+  map.invalidateSize();
+
+  // Asegurar que el mapa se centre después de un breve retraso
+  setTimeout(() => {
+    map.setView([lat, lon], 18);
+    map.invalidateSize();
+  }, 100);
+
+  console.log('Marcador añadido y mapa centrado');
+  Swal.close(); // Cerrar el indicador de carga
+}
 const cargarDispositivos = async () => {
   try {
-    const response = await axios.get('http://3.12.147.103/devices/status');
-    if (response.status === 200) {
-      devices.value = response.data;
-      console.log('Dispositivos cargados:', devices.value);
-      mostrarDispositivosEnMapa();
-      
-    } else {
+    const response = await fetch('http://3.12.147.103/devices');
+    if (!response.ok) {
       throw new Error('Error en la respuesta de la API');
     }
+    const data = await response.json();
+    console.log(data);
+    devices.value = data;
+    filteredResults.value = devices.value;
   } catch (error) {
     console.error('Error al cargar dispositivos:', error);
-  }if (ws) {
+  }
+};
+async function startTracking(device) {
+  // Conectar al servidor WebSocket
+  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
+  if (!response.ok) {
+    throw new Error('Error en la respuesta de la API');
+  }
+  const data = await response.json();
+  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+
+  // Obtener el nombre del dispositivo desde la colección Device
+  const deviceResponse = await fetch(`http://3.12.147.103/devices/${device.imei}`);
+  if (!deviceResponse.ok) {
+    throw new Error('Error en la respuesta de la API');
+  }
+  const deviceData = await deviceResponse.json();
+  deviceName.value = deviceData.deviceName; // Actualizar el nombre del dispositivo
+
+  if (ws) {
     ws.close();
   }
   ws = new WebSocket('ws://3.12.147.103');
@@ -154,18 +227,18 @@ const cargarDispositivos = async () => {
   ws.onopen = () => {
     console.log('Conectado al servidor WebSocket');
     // Enviar el IMEI del dispositivo para obtener actualizaciones
-    ws.send(JSON.stringify({ imei: devices.value.imei }));
+    ws.send(JSON.stringify({ imei: device.imei }));
   };
 
   ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.lat !== undefined && data.lon !== undefined) {
-    mostrarDispositivosEnMapa(); // Llamar a showDeviceOnMap con los datos recibidos
-  } else {
-    console.error('Datos de ubicación no definidos');
-    
-  }
-};
+    const data = JSON.parse(event.data);
+    if (data.lat !== undefined && data.lon !== undefined) {
+      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
+    } else {
+      console.error('Datos de ubicación no definidos');
+    }
+  };
+
   ws.onclose = () => {
     console.log('Desconectado del servidor WebSocket');
   };
@@ -179,9 +252,7 @@ const cargarDispositivos = async () => {
       confirmButtonText: 'OK'
     });
   };
-
-};
-
+}
 
 const mostrarDispositivosEnMapa = () => {
   devices.value.forEach(device => {
@@ -447,9 +518,11 @@ const confirmCreateGeozona = async () => {
 };
 
 onMounted(() => {
+  cargarDispositivos();
    initMap();
+   startTracking();
   cargarGeozonas();
-  cargarDispositivos(); // Cargar los dispositivos al montar el componente
+   // Cargar los dispositivos al montar el componente
 
   typeEffect();
 });
