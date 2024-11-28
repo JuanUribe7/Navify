@@ -289,8 +289,9 @@ async function SendCommand(commandNumber) {
 }
 
 
-
+// Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
+
 changeStream.on('change', async (change) => {
   try {
     console.log('Cambio detectado:', change);
@@ -306,16 +307,24 @@ changeStream.on('change', async (change) => {
             const geozone = device.geozoneId;
             console.log('Geozona encontrada:', geozone);
 
+            // Imprimir los puntos de la geozona
+            if (geozone.type === 'Polygon') {
+              console.log('Puntos de la geozona (Polygon):', geozone.vertices);
+            } else if (geozone.type === 'Circle') {
+              console.log('Centro de la geozona (Circle):', geozone.center);
+              console.log('Radio de la geozona (Circle):', geozone.radius);
+            }
+
             let isOutsideGeozone = false;
 
             if (geozone.type === 'Polygon') {
-              const points = geozone.vertices.map(point => [point.lon, point.lat]);
+              const points = geozone.vertices.map(point => [point.lng, point.lat]);
               const polygon = turf.polygon([points]);
               const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
               isOutsideGeozone = !turf.booleanPointInPolygon(point, polygon);
               console.log('Punto dentro del polígono:', !isOutsideGeozone);
             } else if (geozone.type === 'Circle') {
-              const center = turf.point([geozone.center.lon, geozone.center.lat]);
+              const center = turf.point([geozone.center.lng, geozone.center.lat]);
               const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
               const distance = turf.distance(center, point, { units: 'meters' });
               isOutsideGeozone = distance > geozone.radius;
