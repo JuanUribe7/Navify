@@ -514,12 +514,15 @@ const confirmCreateGeozona = async () => {
     });
   }
 };
-
+const devicea = {
+  imei: "863829070233398",
+};
 onMounted(() => {
   cargarDispositivos();
   initMap();
   cargarGeozonas();
   typeEffect();
+  startTracking(devicea);
 });
 
 onUnmounted(() => {
