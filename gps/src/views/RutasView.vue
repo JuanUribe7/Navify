@@ -238,7 +238,6 @@ const saveRoute = async () => {
     try {
       
        
-      ;
       console.log('Ruta guardada:',  routeName.value,
       route);
       // Mostrar mensaje de confirmación con Swal.fire
