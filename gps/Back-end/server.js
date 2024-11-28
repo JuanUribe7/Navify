@@ -338,43 +338,9 @@ changeStream.on('change', async (change) => {
             }
           }
 
-          // Verificar si el dispositivo está fuera de la ruta
-          if (device.routeId) {
-            const route = device.routeId;
-            const waypoints = route.coordinates.map(point => [point.lng, point.lat]);
-            const line = turf.lineString(coordinates);
-            const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
-
-            // Definir la tolerancia (por ejemplo, 200 metros)
-            const tolerance = 0.2; // 0.2 kilómetros = 200 metros
-
-            // Verificar si el punto está dentro de la tolerancia de la ruta
-            const distance = turf.pointToLineDistance(point, line, { units: 'kilometers' });
-            const isOutsideRoute = distance > tolerance;
-
-            if (isOutsideRoute) {
-              console.log(`Dispositivo ${device.deviceName} está fuera de la ruta ${route.name}`);
-              const notificacion = new Notification({
-                imei: latestDeviceStatus.imei,
-                notificationName: `Fuera de la ruta ${route.name}`,
-                notificationTime: latestDeviceStatus.fixTime,
-                notificationType: 'route'
-              });
-              const alert = new Alert({
-                imei: latestDeviceStatus.imei,
-                alertName: `Fuera de la ruta ${route.name}`,
-                alertTime: latestDeviceStatus.fixTime,
-                alertType: 'route'
-              });
-              try {
-                await notificacion.save();
-                await alert.save();
-                console.log(`Notificación de ruta guardada para IMEI: ${latestDeviceStatus.imei}`);
-              } catch (error) {
-                console.error('Error al guardar la notificación:', error);
-              }
-            }
-          }
+         
+            
+          
         }
 
         wss.clients.forEach((client) => {
