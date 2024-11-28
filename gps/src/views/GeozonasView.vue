@@ -493,6 +493,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  clearInterval(intervalId);
   clearTimeout(typingInterval);
   if (routingControl) {
     map.value.removeControl(routingControl);
