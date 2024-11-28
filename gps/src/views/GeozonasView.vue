@@ -201,68 +201,76 @@ const cargarDispositivos = async () => {
 };
 
 async function startTracking(device) {
-  // Conectar al servidor WebSocket
-  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
-  if (!response.ok) {
-    throw new Error('Error en la respuesta de la API');
-  }
-  const data = await response.json();
-  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+  try {
+    console.log('Iniciando seguimiento para el dispositivo:', device);
 
-  // Obtener el nombre del dispositivo desde la colección Device
-  const deviceResponse = await fetch(`http://3.12.147.103/devices/${device.imei}`);
-  if (!deviceResponse.ok) {
-    throw new Error('Error en la respuesta de la API');
-  }
-  const deviceData = await deviceResponse.json();
-  deviceName.value = deviceData.deviceName; // Actualizar el nombre del dispositivo
-
-  if (ws) {
-    ws.close();
-  }
-  ws = new WebSocket('ws://3.12.147.103');
-
-  ws.onopen = () => {
-    console.log('Conectado al servidor WebSocket');
-    // Enviar el IMEI del dispositivo para obtener actualizaciones
-    ws.send(JSON.stringify({ imei: device.imei }));
-  };
-
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.lat !== undefined && data.lon !== undefined) {
-      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-    } else {
-      console.error('Datos de ubicación no definidos');
+    // Conectar al servidor WebSocket
+    const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API al obtener el estado del dispositivo');
     }
-  };
+    const data = await response.json();
+    console.log('Datos del dispositivo obtenidos:', data);
+    showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
 
-  ws.onclose = () => {
-    console.log('Desconectado del servidor WebSocket');
-  };
+    // Obtener el nombre del dispositivo desde la colección Device
+    const deviceResponse = await fetch(`http://3.12.147.103/devices/${device.imei}`);
+    if (!deviceResponse.ok) {
+      throw new Error('Error en la respuesta de la API al obtener los detalles del dispositivo');
+    }
+    const deviceData = await deviceResponse.json();
+    console.log('Detalles del dispositivo obtenidos:', deviceData);
+    deviceName.value = deviceData.deviceName; // Actualizar el nombre del dispositivo
 
-  ws.onerror = (error) => {
-    console.error('Error en la conexión WebSocket:', error);
+    if (ws) {
+      ws.close();
+    }
+    ws = new WebSocket('ws://3.12.147.103');
+
+    ws.onopen = () => {
+      console.log('Conectado al servidor WebSocket');
+      // Enviar el IMEI del dispositivo para obtener actualizaciones
+      ws.send(JSON.stringify({ imei: device.imei }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Datos recibidos del WebSocket:', data);
+        if (data.lat !== undefined && data.lon !== undefined) {
+          showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
+        } else {
+          console.error('Datos de ubicación no definidos');
+        }
+      } catch (error) {
+        console.error('Error al procesar los datos del WebSocket:', error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('Desconectado del servidor WebSocket');
+    };
+
+    ws.onerror = (error) => {
+      console.error('Error en la conexión WebSocket:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo establecer la conexión con el servidor WebSocket.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    };
+  } catch (error) {
+    console.error('Error al iniciar el seguimiento del dispositivo:', error);
     Swal.fire({
       title: 'Error',
-      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
+      text: `Hubo un error al iniciar el seguimiento del dispositivo: ${error.message}`,
       icon: 'error',
       confirmButtonText: 'OK'
     });
-  };
+  }
 }
 
-const mostrarDispositivosEnMapa = () => {
-  devices.value.forEach(device => {
-    if (device.lat && device.lon) {
-      console.log(`Mostrando dispositivo: ${device.deviceName} en lat: ${device.lat}, lon: ${device.lon}`);
-      const marker = L.marker([device.lat, device.lon]).addTo(map.value);
-      marker.bindPopup(`<b>${device.deviceName}</b><br>Lat: ${device.lat}<br>Lon: ${device.lon}`).openPopup();
-    } else {
-      console.warn(`Dispositivo sin coordenadas: ${device.deviceName}`);
-    }
-  });
-};
 
 const cargarGeozonas = async () => {
   try {
