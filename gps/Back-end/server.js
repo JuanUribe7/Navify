@@ -114,13 +114,14 @@ var tcpServer = net.createServer((client) => {
                     const notificacion = new Notification({
                         imei: gt06.imei,
                         notificationName: `Exceso de velocidad: ${gt06.speed} km/h`,
-                        notificationTime: localTimeISO,
+                        notificationTime: localTimeISO,   
                         notificationType: 'maxSpeed' // Tipo de notificación
                     });
                     const alert = new Alert({
                         imei: gt06.imei,
                         alertName: `Exceso de velocidad: ${gt06.speed} km/h`,
-                        alertTime: localTimeISO
+                        alertTime: localTimeISO,
+                        alertType: 'maxSpeed'
                     });
                     try {
                         await notificacion.save();
