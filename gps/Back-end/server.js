@@ -21,6 +21,7 @@ const turf = require('@turf/turf');
 const WebSocket = require('ws');
 const http = require('http');
 const { WebSocketServer } = require('ws');
+const { default: iziToast } = require('izitoast');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -336,6 +337,12 @@ changeStream.on('change', async (change) => {
             }
 
             if (isOutsideGeozone) {
+              iziToast.warning({
+                title: 'Alerta',
+                message: `Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`,
+                position: 'bottomRight'
+              });
+
               console.log(`Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`);
               const notificacion = new Notification({
                 imei: latestDeviceStatus.imei,
