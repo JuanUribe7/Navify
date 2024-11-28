@@ -20,6 +20,7 @@ const { Device, DeviceStatus} = require('./models/Device');
 const turf = require('@turf/turf');
 const WebSocket = require('ws');
 const http = require('http');
+const { WebSocketServer } = require('ws');
 
 const PORT = process.env.GT06_SERVER_PORT || 4000;
 const HTTP_PORT = process.env.HTTP_PORT || 80;
@@ -232,6 +233,9 @@ app.use('/routes', routes);
 app.use('/notificaciones', notificacionRoutes);
 app.use('/geozone', geozoneRoutes);
 
+
+const wss = new WebSocketServer({ server });
+iniciarWatcher(wss);
 
 
 async function SendCommand(commandNumber) {

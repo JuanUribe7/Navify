@@ -61,7 +61,6 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { formatDate, utc } from '../../Back-end/utils/formatearFecha';
-import axios from 'axios';
 
 // Configuración de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -73,7 +72,7 @@ L.Icon.Default.mergeOptions({
 
 // Variables reactivas
 let map;
-const deviceName = ref('');
+const name = ref('');
 const fixTimeDOM = ref('');
 const speedDOM = ref(0);
 const ignitionDOM = ref('');
@@ -113,10 +112,84 @@ function filterResults() {
     item.deviceName.toLowerCase().includes(query)
   );
 }
+const showAlert = (item) => {
+  console.log(JSON.stringify(item, null, 2));
+  Swal.fire({
+    title: 'Detalles del Dispositivo',
+    html: `
+      <p><strong>Nombre:</strong> ${item.deviceName}</p>
+      <p><strong>Responsable:</strong> ${item.responsible}</p>
+      <p><strong>IMEI:</strong> ${item.imei}</p>
+      <p><strong>Estado:</strong> ${item.status}</p>
+    `,
+    confirmButtonText: 'Mostrar en Mapa',
+    showCancelButton: true,
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      startTracking(item); // Iniciar el seguimiento del dispositivo
+      const cuadro = document.querySelector('.cuadro');
+      cuadro.style.display = 'flex';
+    } else {
+      Swal.close(); // Cerrar el indicador de carga si se cancela
+    }
+  });
+};
 
+async function startTracking(device) {
+  // Conectar al servidor WebSocket
+  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
+  if (!response.ok) {
+    throw new Error('Error en la respuesta de la API');
+  }
+  const data = await response.json();
+  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
+
+  // Obtener el nombre del dispositivo basado en el IMEI
+  const deviceResponse = await fetch(`http://3.12.147.103/devices/${device.imei}`);
+  if (!deviceResponse.ok) {
+    throw new Error('Error en la respuesta de la API al obtener el nombre del dispositivo');
+  }
+  const deviceData = await deviceResponse.json();
+  name.value = deviceData.deviceName; // Actualizar el nombre del dispositivo en el panel de control
+
+  if (ws) {
+    ws.close();
+  }
+  ws = new WebSocket('ws://3.12.147.103');
+
+  ws.onopen = () => {
+    console.log('Conectado al servidor WebSocket');
+    // Enviar el IMEI del dispositivo para obtener actualizaciones
+    ws.send(JSON.stringify({ imei: device.imei }));
+  };
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.lat !== undefined && data.lon !== undefined) {
+      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
+    } else {
+      console.error('Datos de ubicación no definidos');
+    }
+  };
+
+  ws.onclose = () => {
+    console.log('Desconectado del servidor WebSocket');
+  };
+
+  ws.onerror = (error) => {
+    console.error('Error en la conexión WebSocket:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  };
+}
 // Muestra un dispositivo seleccionado en el mapa
 async function showDeviceOnMap(data) {
-  const { lat, lon, fixTime, speed, ignition, charging, deviceName:name } = data;
+  const { lat, lon, fixTime, speed, ignition, charging, deviceName } = data;
   if (lat === undefined || lon === undefined) {
     console.error('Latitud o longitud no definida');
     Swal.fire({
@@ -139,7 +212,7 @@ async function showDeviceOnMap(data) {
     }
   });
 
-  deviceName.value = name;
+  name.value = deviceName;
   fixTimeDOM.value = fixTime;
   speedDOM.value = speed;
   ignitionDOM.value = ignition ? 'Sí' : 'No';
@@ -152,13 +225,6 @@ async function showDeviceOnMap(data) {
   const marker = L.marker([lat, lon]).addTo(map);
 
   // Mostrar información del dispositivo en un popup
-  marker.bindPopup(`
-    <b>${name}</b><br>
-    Tiempo: ${new Date(fixTime).toLocaleString()}<br>
-    Velocidad: ${speed} km/h <br>
-    Encendido: ${ignition ? 'Sí' : 'No'}<br>
-    Cargando: ${charging ? 'Sí' : 'No'}<br>
-  `).openPopup();
 
   // Forzar una actualización del mapa
   map.invalidateSize();
@@ -214,51 +280,10 @@ async function startTracking(device) {
       confirmButtonText: 'OK'
     });
   };
-}const sendCommand = async (commandNumber) => {
-  try {
-    const response = await axios.get(`http://3.12.147.103/send-command/${commandNumber}`);
-    console.log(response.data);
-    Swal.fire({
-      title: 'Comando Enviado',
-      text: `El comando ${commandNumber} ha sido enviado al GPS.`,
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
-  } catch (error) {
-    console.error('Error al enviar el comando:', error.message);
-    Swal.fire({
-      title: 'Error',
-      text: `Hubo un error al enviar el comando ${commandNumber}.`,
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
-  }
-};
+}
 
 // Muestra una alerta con los detalles del dispositivo
-const showAlert = (item) => {
-  console.log(JSON.stringify(item, null, 2));
-  Swal.fire({
-    title: 'Detalles del Dispositivo',
-    html: `
-      <p><strong>Nombre:</strong> ${item.deviceName}</p>
-      <p><strong>Responsable:</strong> ${item.responsible}</p>
-      <p><strong>IMEI:</strong> ${item.imei}</p>
-      <p><strong>Estado:</strong> ${item.status}</p>
-    `,
-    confirmButtonText: 'Mostrar en Mapa',
-    showCancelButton: true,
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      startTracking(item); // Iniciar el seguimiento del dispositivo
-      const cuadro = document.querySelector('.cuadro');
-      cuadro.style.display = 'flex';
-    } else {
-      Swal.close(); // Cerrar el indicador de carga si se cancela
-    }
-  });
-};
+
 
 // Carga los dispositivos desde la API
 const cargarDispositivos = async () => {

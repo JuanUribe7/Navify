@@ -146,17 +146,25 @@ router.put('/:id', async (req, res) => {
 });
 
 // Endpoint para obtener el estado de un dispositivo por IMEI
-router.get('/status/:imei', async (req, res) => {
+router.get('/devices/status/:imei', async (req, res) => {
     try {
         const { imei } = req.params;
         const deviceStatus = await DeviceStatus.findOne({ imei });
-        if (!deviceStatus) {
-            return res.status(404).json({ message: 'Estado del dispositivo no encontrado' });
+        const device = await Device.findOne({ imei });
+
+        if (!deviceStatus || !device) {
+            return res.status(404).json({ error: 'Dispositivo no encontrado' });
         }
-        res.json(deviceStatus);
+
+        const response = {
+            ...deviceStatus.toObject(),
+            deviceName: device.deviceName
+        };
+
+        res.status(200).json(response);
     } catch (error) {
-        console.error('Error al obtener el estado del dispositivo:', error.message);
-        res.status(500).json({ error: 'Error al obtener el estado del dispositivo: ' + error.message });
+        console.error('Error al obtener el estado del dispositivo:', error);
+        res.status(500).json({ error: 'Error al obtener el estado del dispositivo' });
     }
 });
 
