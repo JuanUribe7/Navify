@@ -33,6 +33,13 @@ iziToast.warning({
     position: 'bottomRight',
     image: accidente,
     timeout: 5000 // Mostrar la alerta durante 5 segundos
+}):(notificacion.notificationType=="geozone")?
+iziToast.info({
+    title: 'Notificación',
+    message: notificacion.notificationName || 'Nueva notificación',
+    position: 'bottomRight',
+    image: gasolinaImage,
+    timeout: 5000 // Mostrar la alerta durante 5 segundos
 }):null;
 
 

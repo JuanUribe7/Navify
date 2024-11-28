@@ -238,49 +238,6 @@ async function showDeviceOnMap(data) {
   console.log('Marcador añadido y mapa centrado');
   Swal.close(); // Cerrar el indicador de carga
 }
-async function startTracking(device) {
-  // Conectar al servidor WebSocket
-  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
-    if (!response.ok) {
-      throw new Error('Error en la respuesta de la API');
-    }
-    const data = await response.json();
-    showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
-
-  if (ws) {
-    ws.close();
-  }
-  ws = new WebSocket('ws://3.12.147.103');
-
-  ws.onopen = () => {
-    console.log('Conectado al servidor WebSocket');
-    // Enviar el IMEI del dispositivo para obtener actualizaciones
-    ws.send(JSON.stringify({ imei: device.imei }));
-  };
-
-  ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.lat !== undefined && data.lon !== undefined) {
-    showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-  } else {
-    console.error('Datos de ubicación no definidos');
-    
-  }
-};
-  ws.onclose = () => {
-    console.log('Desconectado del servidor WebSocket');
-  };
-
-  ws.onerror = (error) => {
-    console.error('Error en la conexión WebSocket:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo establecer la conexión con el servidor WebSocket.',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
-  };
-}
 
 // Muestra una alerta con los detalles del dispositivo
 

@@ -288,7 +288,7 @@ async function SendCommand(commandNumber) {
     }
 }
 
-const wss = new WebSocket.Server({ server  });
+
 
 // Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
