@@ -151,11 +151,6 @@ async function showDeviceOnMap(data) {
   }
 
   // Limpiar marcadores existentes
-  map.value.eachLayer((layer) => {
-    if (layer instanceof L.Marker) {
-      map.value.removeLayer(layer);
-    }
-  });
 
   // Centrar el mapa en la ubicación del dispositivo
   map.value.setView([lat, lon], 18);
