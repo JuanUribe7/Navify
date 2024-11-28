@@ -514,7 +514,9 @@ const confirmCreateGeozona = async () => {
     });
   }
 };
-
+const intervalId = setInterval(() => {
+  startTracking(devicea);
+}, 2000);
 const devicea = {
   imei: "863829070233398",
 };
@@ -523,7 +525,7 @@ onMounted(() => {
   initMap();
   cargarGeozonas();
   typeEffect();
-
+  startTracking(devicea);
 });
 
 onUnmounted(() => {
