@@ -59,7 +59,7 @@ mqttClient.on('error', (err) => {
     console.error('Error en la conexión MQTT:', err);
 });
 
-app.use(express.static(path.join(__dirname, 'dist' )));
+
 
 // Servidor TCP
 let cliente = null;
@@ -359,7 +359,7 @@ changeStream.on('change', async (change) => {
   }
 });
 
-
+app.use(express.static(path.join(__dirname, 'dist' )));
 
 wss.on('connection', (ws) => {
     ws.on('close', () => {
