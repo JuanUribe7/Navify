@@ -236,11 +236,11 @@ const saveRoute = async () => {
     const route = waypoints.map(point => ({ lat: point.lat, lng: point.lng }));
 
     try {
-      const response = await axios.post('http://3.12.147.103/routes/save-route', {
-        name: routeName.value,
-        coordinates: route
-      });
-      console.log('Ruta guardada:', response.data);
+      
+       
+      ;
+      console.log('Ruta guardada:',  routeName.value,
+      route);
       // Mostrar mensaje de confirmación con Swal.fire
       Swal.fire({
         title: 'Ruta guardada',
