@@ -207,13 +207,13 @@ router.get('/history/:imei', async (req, res) => {
 router.put('/geozones/:id', async (req, res) => {
     try {
       const { imeis, name } = req.body; // Extraer el array de IMEIs y el nombre de la geozona
-  
+      const geoid = req.params.id;
       // Verificar que el array de IMEIs no esté vacío
       if (imeis && imeis.length > 0) {
         // Actualizar los dispositivos con el nombre de la geozona
         await Device.updateMany(
           { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-          { $set: { geozoneId: name } } // Asignar el nombre de la geozona
+          { $set: { geozoneId: geoid } } // Asignar el nombre de la geozona
         );
       }
   
@@ -226,13 +226,13 @@ router.put('/geozones/:id', async (req, res) => {
   router.put('/update-route/:id', async (req, res) => {
     try {
       const { imeis, name } = req.body; // Extraer el array de IMEIs y el nombre de la ruta
-  
+      const route = req.params.id;
       // Verificar que el array de IMEIs no esté vacío joa
       if (imeis && imeis.length > 0) {
         // Actualizar los dispositivos con el nombre de la ruta
         await Device.updateMany(
           { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-          { $set: { routeId: name } },
+          { $set: { routeId: route } },
           { runValidators: false }  // Asignar el nombre de la ruta
         );
       }
