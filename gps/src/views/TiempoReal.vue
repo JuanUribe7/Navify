@@ -213,7 +213,26 @@ async function startTracking(device) {
       confirmButtonText: 'OK'
     });
   };
-}
+}const sendCommand = async (commandNumber) => {
+  try {
+    const response = await axios.get(`http://3.12.147.103/send-command/${commandNumber}`);
+    console.log(response.data);
+    Swal.fire({
+      title: 'Comando Enviado',
+      text: `El comando ${commandNumber} ha sido enviado al GPS.`,
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+  } catch (error) {
+    console.error('Error al enviar el comando:', error.message);
+    Swal.fire({
+      title: 'Error',
+      text: `Hubo un error al enviar el comando ${commandNumber}.`,
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  }
+};
 
 // Muestra una alerta con los detalles del dispositivo
 const showAlert = (item) => {
