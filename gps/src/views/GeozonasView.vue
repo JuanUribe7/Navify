@@ -55,6 +55,7 @@
   </section>
 </template>
 
+
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import NavBar from '../components/NavBar.vue';
@@ -89,6 +90,7 @@ let geozoneMarker = null;
 let coordinates = null;
 let ws = null;
 
+const deviceName = ref('');
 const showModal = ref(false);
 const showDeviceModal = ref(false);
 const geozoneName = ref('');
@@ -143,29 +145,23 @@ async function showDeviceOnMap(data) {
     });
     return;
   }
-  if (!map) {
+  if (!map.value) {
     console.error('El mapa no está inicializado');
     return;
   }
 
   // Limpiar marcadores existentes
-  map.eachLayer((layer) => {
+  map.value.eachLayer((layer) => {
     if (layer instanceof L.Marker) {
-      map.removeLayer(layer);
+      map.value.removeLayer(layer);
     }
   });
 
-  deviceName.value = name;
-  fixTimeDOM.value = fixTime;
-  speedDOM.value = speed;
-  ignitionDOM.value = ignition ? 'Sí' : 'No';
-  chargingDOM.value = charging ? 'Sí' : 'No';
-
   // Centrar el mapa en la ubicación del dispositivo
-  map.setView([lat, lon], 18);
+  map.value.setView([lat, lon], 18);
 
   // Añadir un nuevo marcador para el dispositivo
-  const marker = L.marker([lat, lon]).addTo(map);
+  const marker = L.marker([lat, lon]).addTo(map.value);
 
   // Mostrar información del dispositivo en un popup
   marker.bindPopup(`
@@ -177,17 +173,18 @@ async function showDeviceOnMap(data) {
   `).openPopup();
 
   // Forzar una actualización del mapa
-  map.invalidateSize();
+  map.value.invalidateSize();
 
   // Asegurar que el mapa se centre después de un breve retraso
   setTimeout(() => {
-    map.setView([lat, lon], 18);
-    map.invalidateSize();
+    map.value.setView([lat, lon], 18);
+    map.value.invalidateSize();
   }, 100);
 
   console.log('Marcador añadido y mapa centrado');
   Swal.close(); // Cerrar el indicador de carga
 }
+
 const cargarDispositivos = async () => {
   try {
     const response = await fetch('http://3.12.147.103/devices');
@@ -202,6 +199,7 @@ const cargarDispositivos = async () => {
     console.error('Error al cargar dispositivos:', error);
   }
 };
+
 async function startTracking(device) {
   // Conectar al servidor WebSocket
   const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
@@ -519,13 +517,11 @@ const confirmCreateGeozona = async () => {
 
 onMounted(() => {
   cargarDispositivos();
-   initMap();
-   startTracking();
+  initMap();
   cargarGeozonas();
-   // Cargar los dispositivos al montar el componente
-
   typeEffect();
 });
+
 onUnmounted(() => {
   clearTimeout(typingInterval);
   if (routingControl) {
@@ -533,7 +529,6 @@ onUnmounted(() => {
   }
 });
 </script>
-
 <style scoped>
 .home {
   height: 100vh;
