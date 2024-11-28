@@ -213,7 +213,7 @@ router.put('/geozones/:id', async (req, res) => {
         // Actualizar los dispositivos con el nombre de la geozona
         await Device.updateMany(
           { imei: { $in: imeis } }, // Filtrar dispositivos por los IMEIs proporcionados
-          { $set: { geozoneI: name } } // Asignar el nombre de la geozona
+          { $set: { geozoneId: name } } // Asignar el nombre de la geozona
         );
       }
   
