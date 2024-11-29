@@ -61,8 +61,6 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { formatDate, utc } from '../../Back-end/utils/formatearFecha';
-import axios from 'axios';
-
 
 // Configuración de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -101,26 +99,6 @@ function initMap() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 }
-const sendCommand = async (commandNumber) => {
-  try {
-    const response = await axios.get(`http://3.12.147.103/send-command/${commandNumber}`);
-    console.log(response.data);
-    Swal.fire({
-      title: 'Comando Enviado',
-      text: `El comando ${commandNumber} ha sido enviado al GPS.`,
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
-  } catch (error) {
-    console.error('Error al enviar el comando:', error.message);
-    Swal.fire({
-      title: 'Error',
-      text: `Hubo un error al enviar el comando ${commandNumber}.`,
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
-  }
-};
 
 // Alterna la visibilidad del menú desplegable
 function toggleDropdown() {
@@ -134,7 +112,6 @@ function filterResults() {
     item.deviceName.toLowerCase().includes(query)
   );
 }
-
 
 // Muestra un dispositivo seleccionado en el mapa
 async function showDeviceOnMap(data) {
@@ -197,13 +174,11 @@ async function showDeviceOnMap(data) {
 async function startTracking(device) {
   // Conectar al servidor WebSocket
   const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
-  if (!response.ok) {
-    throw new Error('Error en la respuesta de la API');
-  }
-  const data = await response.json();
-  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
-
-  
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
+    }
+    const data = await response.json();
+    showDeviceOnMap(data); // Mostrar la última ubicación en el mapa
 
   if (ws) {
     ws.close();
@@ -217,14 +192,14 @@ async function startTracking(device) {
   };
 
   ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.lat !== undefined && data.lon !== undefined) {
-      showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
-    } else {
-      console.error('Datos de ubicación no definidos');
-    }
-  };
-
+  const data = JSON.parse(event.data);
+  if (data.lat !== undefined && data.lon !== undefined) {
+    showDeviceOnMap(data); // Llamar a showDeviceOnMap con los datos recibidos
+  } else {
+    console.error('Datos de ubicación no definidos');
+    
+  }
+};
   ws.onclose = () => {
     console.log('Desconectado del servidor WebSocket');
   };
