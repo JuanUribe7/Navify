@@ -373,7 +373,7 @@ changeStream.on('change', async (change) => {
 
 
 
-
+iniciarWatcher(wss);
 wss.on('connection', (ws) => {
   ws.on('close', () => {
       console.log('Cliente WebSocket desconectado');
