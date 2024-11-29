@@ -289,12 +289,12 @@ async function SendCommand(commandNumber) {
 }
 
 
+const wss = new WebSocketServer({ server });
 // Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
 
 changeStream.on('change', async (change) => {
   try {
-    console.log('Cambio detectado:', change);
     if (change.operationType === 'insert' || change.operationType === 'update') {
       const latestDeviceStatus = await DeviceStatus.findOne().sort({ fixTime: -1 }).exec();
       console.log('Último estado del dispositivo:', latestDeviceStatus);
@@ -305,16 +305,6 @@ changeStream.on('change', async (change) => {
           // Verificar si el dispositivo está fuera de la geozona
           if (device.geozoneId) {
             const geozone = device.geozoneId;
-            console.log('Geozona encontrada:', geozone);
-
-            // Imprimir los puntos de la geozona
-            if (geozone.type === 'Polygon') {
-              console.log('Puntos de la geozona (Polygon):', geozone.vertices);
-            } else if (geozone.type === 'Circle') {
-              console.log('Centro de la geozona (Circle):', geozone.center);
-              console.log('Radio de la geozona (Circle):', geozone.radius);
-            }
-
             let isOutsideGeozone = false;
 
             if (geozone.type === 'Polygon') {
@@ -368,6 +358,13 @@ changeStream.on('change', async (change) => {
       } else {
         console.log('No se encontró el último estado del dispositivo.');
       }
+
+      // Enviar el estado más reciente del dispositivo a todos los clientes conectados
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(latestDeviceStatus));
+        }
+      });
     }
   } catch (error) {
     console.error('Error al procesar el cambio:', error);
@@ -376,7 +373,6 @@ changeStream.on('change', async (change) => {
 
 
 
-const wss = new WebSocketServer({ server });
 iniciarWatcher(wss);
 wss.on('connection', (ws) => {
   ws.on('close', () => {

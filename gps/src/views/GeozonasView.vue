@@ -157,7 +157,6 @@ async function showDeviceOnMap(data) {
   // Limpiar marcadores existentes
 
   // Centrar el mapa en la ubicación del dispositivo
-  map.value.setView([lat, lon], 18);
 
   // Añadir un nuevo marcador para el dispositivo
   const marker = L.marker([lat, lon]).addTo(map.value);
@@ -167,8 +166,6 @@ async function showDeviceOnMap(data) {
     <b>${name}</b><br>
     Tiempo: ${new Date(fixTime).toLocaleString()}<br>
     Velocidad: ${speed} km/h <br>
-    Encendido: ${ignition ? 'Sí' : 'No'}<br>
-    Cargando: ${charging ? 'Sí' : 'No'}<br>
   `).openPopup();
 
   // Forzar una actualización del mapa
@@ -200,27 +197,23 @@ const cargarDispositivos = async () => {
 };
 
 async function startTracking(device) {
-  // Conectar al servidor WebSocket
-  const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
-  if (!response.ok) {
-    throw new Error('Error en la respuesta de la API');
-  }
-  const data = await response.json();
-  showDeviceOnMap(data); // Mostrar la última ubicación en el mapa 
-  }
-
-
-const mostrarDispositivosEnMapa = () => {
-  devices.value.forEach(device => {
-    if (device.lat && device.lon) {
-      console.log(`Mostrando dispositivo: ${device.deviceName} en lat: ${device.lat}, lon: ${device.lon}`);
-      const marker = L.marker([device.lat, device.lon]).addTo(map.value);
-      marker.bindPopup(`<b>${device.deviceName}</b><br>Lat: ${device.lat}<br>Lon: ${device.lon}`).openPopup();
-    } else {
-      console.warn(`Dispositivo sin coordenadas: ${device.deviceName}`);
+  try {
+    // Conectar al servidor WebSocket
+    const response = await fetch(`http://3.12.147.103/devices/status/${device.imei}`);
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
     }
-  });
-};
+    const data = await response.json();
+    showDeviceOnMap(data);
+  } catch (error) {
+    console.error('Error al iniciar el seguimiento:', error);
+    // Aquí puedes manejar el error de manera adecuada, por ejemplo, mostrando un mensaje al usuario
+    alert('Hubo un problema al iniciar el seguimiento del dispositivo. Por favor, inténtalo de nuevo más tarde.');
+  }
+}
+
+
+
 
 const cargarGeozonas = async () => {
   try {
