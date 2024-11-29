@@ -379,6 +379,7 @@ wss.on('connection', (ws) => {
       console.log('Cliente WebSocket desconectado');
   });
 });
+app.use(express.static(path.join(__dirname, 'dist' )));
 
 
 app.get('*', (req, res) => {
