@@ -417,9 +417,12 @@ const saveGeozone = async () => {
       title: 'Geozona guardada',
       text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
       icon: 'success'
-    }).then(() => {
+    }).then(async () => {
       showModal.value = false;
       showDeviceModal.value = true; // Mostrar el modal de dispositivos
+      await cargarDispositivos(); // Actualizar la lista de dispositivos
+      await cargarGeozonas(); // Actualizar la lista de geozonas
+      filterResults(); // Actualizar los resultados filtrados
     });
   } catch (error) {
     console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
