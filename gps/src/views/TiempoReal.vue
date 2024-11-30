@@ -62,7 +62,8 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 import axios from 'axios';
-import 'leaflet.marker.slideto/leaflet.smoothmarkerbouncing.js';
+import 'leaflet.marker.slideto';
+
 // Configuración de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -73,6 +74,7 @@ L.Icon.Default.mergeOptions({
 
 // Variables reactivas
 let map;
+let marker = null;
 const deviceName = ref('');
 const fixTimeDOM = ref('');
 const speedDOM = ref(0);
@@ -150,7 +152,7 @@ async function showDeviceOnMap(data) {
 
   // Añadir un nuevo marcador para el dispositivo
   if (!marker) {
-    marker = L.marker([lat, lon], { bounceOnAdd: true }).addTo(map);
+    marker = L.marker([lat, lon]).addTo(map);
   } else {
     marker.slideTo([lat, lon], {
       duration: 1000,
