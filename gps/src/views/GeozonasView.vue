@@ -181,20 +181,7 @@ async function showDeviceOnMap(data) {
   Swal.close(); // Cerrar el indicador de carga
 }
 
-const cargarDispositivos = async () => {
-  try {
-    const response = await fetch('http://3.12.147.103/devices');
-    if (!response.ok) {
-      throw new Error('Error en la respuesta de la API');
-    }
-    const data = await response.json();
-    console.log(data);
-    devices.value = data;
-    filteredResults.value = devices.value;
-  } catch (error) {
-    console.error('Error al cargar dispositivos:', error);
-  }
-};
+
 
 async function startTracking(device) {
   try {
@@ -215,6 +202,21 @@ async function startTracking(device) {
 
 
 
+const cargarDispositivos = async () => {
+  try {
+    const response = await fetch('http://3.12.147.103/devices');
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la API');
+    }
+    const data = await response.json();
+    console.log(data);
+    devices.value = data;
+    filterResults(); // Actualizar los resultados filtrados
+  } catch (error) {
+    console.error('Error al cargar dispositivos:', error);
+  }
+};
+
 const cargarGeozonas = async () => {
   try {
     const response = await fetch('http://3.12.147.103/geozone/geozones');
@@ -224,7 +226,7 @@ const cargarGeozonas = async () => {
     const data = await response.json();
     geozones.value = data;
     console.log('Geozonas cargadas:', geozones.value);
-    filteredResults.value = geozones.value;
+    filterResults(); // Actualizar los resultados filtrados
   } catch (error) {
     console.error('Error al cargar geozonas:', error);
   }
@@ -353,9 +355,10 @@ const deleteLastShape = () => {
 
 const filterResults = () => {
   const query = searchQuery.value.toLowerCase();
-  filteredResults.value = geozones.value.filter(item => {
-    return item.name.toLowerCase().includes(query);
-  });
+  filteredResults.value = [
+    ...devices.value.filter(item => item.deviceName.toLowerCase().includes(query)),
+    ...geozones.value.filter(item => item.name.toLowerCase().includes(query))
+  ];
 };
 
 
