@@ -45,7 +45,7 @@
         <h2>Seleccionar Dispositivo</h2>
         <ul class="device-list-modal">
           <li v-for="device in devices" :key="device.id" class="device-item">
-            <input type="checkbox" :checked="selectedDevices.includes(device)" @click.stop="toggleDeviceSelection(device)" />
+            <input type="checkbox" :checked="selectedDevices.includes(device)" @click="toggleDeviceSelection(device)" />
             {{ device.deviceName }}
           </li>
         </ul>
@@ -412,17 +412,12 @@ const saveGeozone = async () => {
     const response = await axios.post('http://3.12.147.103/geozone/geozones', geozoneData);
     console.log('Geozona guardada:', response.data);
     selectedGeozone.value = response.data; // Almacenar la geozona creada en selectedGeozone
-    Swal.fire({
-      title: 'Geozona guardada',
-      text: 'La geozona ha sido guardada exitosamente. Ahora selecciona los dispositivos.',
-      icon: 'success'
-    }).then(async () => {
+  
       showModal.value = false;
       showDeviceModal.value = true; // Mostrar el modal de dispositivos
       await cargarDispositivos(); // Actualizar la lista de dispositivos
       await cargarGeozonas(); // Actualizar la lista de geozonas
       filterResults(); // Actualizar los resultados filtrados
-    });
   } catch (error) {
     console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
     Swal.fire({

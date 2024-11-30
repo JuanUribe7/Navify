@@ -7,22 +7,7 @@
       <div class="hone2">
         <h1>Historial</h1>
       </div>
-      <div id="play-content" class="play-content">
-        <div class="player-controls">
-          <button @click="playRecording" class="control-button">
-            <i class='bx bx-play'></i>
-          </button>
-          <button @click="stopRecording" class="control-button">
-            <i class='bx bx-stop'></i>
-          </button>
-          <button @click="pauseRecording" class="control-button">
-            <i class='bx bx-pause'></i>
-          </button>
-          <button @click="resetRecording" class="control-button">
-            <i class='bx bx-reset'></i>
-          </button>
-        </div>
-      </div>
+   
     </div>
 
     <div class="tituloo">
@@ -241,8 +226,7 @@ const updateMarker = (index) => {
     <b>${device.deviceName}</b><br>
     Tiempo: ${formattedTime}<br>
     Velocidad: ${speed} km/h <br>
-    Encendido: ${ignition}<br>
-    Cargando: ${charging}<br>
+ 
   `).openPopup();
 };
 
@@ -255,7 +239,7 @@ const interval = setInterval(() => {
   }
   updateMarker(index);
   index++;
-}, 1000); // Actualiza cada segundo (puedes ajustar el intervalo según sea necesario)
+}, 2000); // Actualiza cada segundo (puedes ajustar el intervalo según sea necesario)
 
 // Ajustar el mapa para que se vea la polilínea
 map.fitBounds(polyline.getBounds());
