@@ -17,7 +17,7 @@ const  Notification  = require('./models/notification'); // Importa el modelo de
 const Alert = require('./models/Alert'); // Importa el modelo de alerta
 const geozoneRoutes = require('./routes/geozone');
 const { Device, DeviceStatus} = require('./models/Device');
-const turf = require('@turf/turf');
+const geolib = require('geolib');
 const WebSocket = require('ws');
 const http = require('http');
 const { WebSocketServer } = require('ws');
@@ -33,9 +33,6 @@ const brokerPasswd = process.env.MQTT_BROKER_PASSWD || 'Dl1042248136!';
 
 let previousSpeed = 0;
 const BRAKING_THRESHOLD = 80;
-
-
-
 
 app.get('/send-command/:commandNumber', (req, res) => {
     const commandNumber = parseInt(req.params.commandNumber, 10);
@@ -59,18 +56,14 @@ mqttClient.on('error', (err) => {
     console.error('Error en la conexión MQTT:', err);
 });
 
-
-
 // Servidor TCP
 let cliente = null;
-
 
 var tcpServer = net.createServer((client) => {
     var gt06 = new Gt06();
     cliente=client;
     console.log('client connected');
     
-
     client.on('error', (err) => {
         console.error('client error', err);
     });
@@ -100,7 +93,6 @@ var tcpServer = net.createServer((client) => {
                 previousSpeed=gt06.speed
         // Variable para almacenar la velocidad anterior
                  // Umbral de frenado brusco en km/h
-
 
                 // Convertir a la hora local
                 const localTime = new Date(gpsTime.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
@@ -132,7 +124,6 @@ var tcpServer = net.createServer((client) => {
                     }
                 }
 
-
                 if (previousSpeed - gt06.speed >= previousSpeed-5&&previousSpeed>=30) {
                     console.log(`Frenado brusco detectado, creando alerta...`);
                     const notificacion = new Notification({
@@ -156,8 +147,6 @@ var tcpServer = net.createServer((client) => {
                 }
                 previousSpeed = gt06.speed;
 
-
-             
                 const deviceData = {
                     imei: gt06.imei,
                     Lat: gt06.lat,
@@ -234,10 +223,6 @@ app.use('/routes', routes);
 app.use('/notificaciones', notificacionRoutes);
 app.use('/geozone', geozoneRoutes);
 
-
-
-
-
 async function SendCommand(commandNumber) {
     let commandBuffer;
     let alertaName;
@@ -288,7 +273,6 @@ async function SendCommand(commandNumber) {
     }
 }
 
-
 const wss = new WebSocketServer({ server });
 // Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
@@ -313,14 +297,15 @@ changeStream.on('change', async (change) => {
               if (points[0][0] !== points[points.length - 1][0] || points[0][1] !== points[points.length - 1][1]) {
                 points.push(points[0]);
               }
-              const polygon = turf.polygon([points]);
-              const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
-              isOutsideGeozone = !turf.booleanPointInPolygon(point, polygon);
+              isOutsideGeozone = !geolib.isPointInPolygon(
+                { latitude: latestDeviceStatus.lat, longitude: latestDeviceStatus.lon },
+                points.map(point => ({ latitude: point[1], longitude: point[0] }))
+              );
               console.log('Punto dentro del polígono:', !isOutsideGeozone);
             } else if (geozone.type === 'Circle') {
-              const center = turf.point([geozone.center.lng, geozone.center.lat]);
-              const point = turf.point([latestDeviceStatus.lon, latestDeviceStatus.lat]);
-              const distance = turf.distance(center, point, { units: 'meters' });
+              const center = { latitude: geozone.center.lat, longitude: geozone.center.lng };
+              const point = { latitude: latestDeviceStatus.lat, longitude: latestDeviceStatus.lon };
+              const distance = geolib.getDistance(center, point);
               isOutsideGeozone = distance > geozone.radius;
               console.log('Distancia desde el centro:', distance, 'Fuera de la geozona:', isOutsideGeozone);
             }
@@ -371,8 +356,6 @@ changeStream.on('change', async (change) => {
   }
 });
 
-
-
 iniciarWatcher(wss);
 wss.on('connection', (ws) => {
   ws.on('close', () => {
@@ -380,7 +363,6 @@ wss.on('connection', (ws) => {
   });
 });
 app.use(express.static(path.join(__dirname, 'dist' )));
-
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
