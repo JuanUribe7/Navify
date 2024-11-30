@@ -272,8 +272,10 @@ async function SendCommand(commandNumber) {
         console.error('No GPS client connected');
     }
 }
-
+const deviceStatusMap = new Map();
 const wss = new WebSocketServer({ server });
+// Iniciar el watcher para cambios en la base de datos
+
 // Iniciar el watcher para cambios en la base de datos
 const changeStream = DeviceStatus.watch();
 
@@ -310,7 +312,10 @@ changeStream.on('change', async (change) => {
               console.log('Distancia desde el centro:', distance, 'Fuera de la geozona:', isOutsideGeozone);
             }
 
-            if (isOutsideGeozone) {
+            const deviceKey = `${device.imei}-${geozone._id}`;
+            const previousStatus = deviceStatusMap.get(deviceKey);
+
+            if (isOutsideGeozone && !previousStatus) {
               console.log(`Dispositivo ${device.deviceName} está fuera de la geozona ${geozone.name}`);
               const notificacion = new Notification({
                 imei: latestDeviceStatus.imei,
@@ -328,11 +333,13 @@ changeStream.on('change', async (change) => {
                 await notificacion.save();
                 await alert.save();
                 console.log(`Notificación de geozona guardada para IMEI: ${latestDeviceStatus.imei}`);
+                deviceStatusMap.set(deviceKey, true); // Actualizar el estado del dispositivo
               } catch (error) {
                 console.error('Error al guardar la notificación:', error);
               }
-            } else {
+            } else if (!isOutsideGeozone && previousStatus) {
               console.log(`Dispositivo ${device.deviceName} está dentro de la geozona ${geozone.name}`);
+              deviceStatusMap.set(deviceKey, false); // Actualizar el estado del dispositivo
             }
           } else {
             console.log('El dispositivo no tiene una geozona asignada.');

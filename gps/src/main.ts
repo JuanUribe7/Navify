@@ -37,12 +37,12 @@ iziToast.warning({
     image: accidente,
     timeout: 5000 // Mostrar la alerta durante 5 segundos
 }):(notificacion.notificationType=="geozone")?
-iziToast.info({
+iziToast.warning({
     title: 'Notificación',
     message: notificacion.notificationName || 'Nueva notificación',
     position: 'bottomRight',
     image: mapas,
-    timeout: 5000 // Mostrar la alerta durante 5 segundos
+    timeout: 8000 // Mostrar la alerta durante 5 segundos
 }):null;
 
 

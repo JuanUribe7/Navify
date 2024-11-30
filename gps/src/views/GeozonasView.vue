@@ -224,14 +224,13 @@ const cargarGeozonas = async () => {
       throw new Error('Error en la respuesta de la API');
     }
     const data = await response.json();
-    geozones.value = data;
+    geozones.value = data.filter(item => item.name); // Filtrar geozonas sin nombre
     console.log('Geozonas cargadas:', geozones.value);
     filterResults(); // Actualizar los resultados filtrados
   } catch (error) {
     console.error('Error al cargar geozonas:', error);
   }
 };
-
 const initMap = () => {
   if (!map.value) {
     map.value = L.map('map').setView([10.96854, -74.78132], 12);
@@ -357,7 +356,7 @@ const filterResults = () => {
   const query = searchQuery.value.toLowerCase();
   filteredResults.value = [
     ...devices.value.filter(item => item.deviceName.toLowerCase().includes(query)),
-    ...geozones.value.filter(item => item.name.toLowerCase().includes(query))
+    ...geozones.value.filter(item => item.name && item.name.toLowerCase().includes(query))
   ];
 };
 
