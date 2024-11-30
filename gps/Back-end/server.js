@@ -101,7 +101,7 @@ var tcpServer = net.createServer((client) => {
                 const localTimeISO = localTime.toISOString();
 
                 //agregar alertas y notificaciones de velocidad
-                if (gt06.speed > 2) {
+                if (gt06.speed > 25) {
                     console.log(`Velocidad de ${gt06.speed} km/h detectada, creando alerta...`);
                     const notificacion = new Notification({
                         imei: gt06.imei,

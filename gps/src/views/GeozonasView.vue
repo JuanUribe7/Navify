@@ -79,7 +79,7 @@ const filteredResults = ref([]);
 const selectedGeozone = ref(null); // Referencia reactiva para almacenar la geozona seleccionada
 const geozoneShapes = ref({});
 const dropdownOpen = ref(false);
-
+import { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 const fullText = "Navify";
 const displayedText = ref("");
 let currentIndex = 0;
@@ -164,7 +164,7 @@ async function showDeviceOnMap(data) {
   // Mostrar información del dispositivo en un popup
   marker.bindPopup(`
     <b>${name}</b><br>
-    Tiempo: ${new Date(fixTime).toLocaleString()}<br>
+    Tiempo: ${formatDate(utc(fixTime))}<br>
     Velocidad: ${speed} km/h <br>
   `).openPopup();
 

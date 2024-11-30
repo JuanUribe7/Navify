@@ -151,13 +151,6 @@ async function showDeviceOnMap(data) {
   const marker = L.marker([lat, lon]).addTo(map);
 
   // Mostrar información del dispositivo en un popup
-  marker.bindPopup(`
-    <b>${name}</b><br>
-    Tiempo: ${new Date(fixTime).toLocaleString()}<br>
-    Velocidad: ${speed} km/h <br>
-    Encendido: ${ignition ? 'Sí' : 'No'}<br>
-    Cargando: ${charging ? 'Sí' : 'No'}<br>
-  `).openPopup();
 
   // Forzar una actualización del mapa
   map.invalidateSize();
