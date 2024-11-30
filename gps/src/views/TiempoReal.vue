@@ -134,12 +134,6 @@ async function showDeviceOnMap(data) {
     return;
   }
 
-  // Limpiar marcadores existentes
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Marker) {
-      map.removeLayer(layer);
-    }
-  });
 
   deviceName.value = name;
   fixTimeDOM.value = fixTime;
