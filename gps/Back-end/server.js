@@ -338,8 +338,27 @@ changeStream.on('change', async (change) => {
                 console.error('Error al guardar la notificación:', error);
               }
             } else if (!isOutsideGeozone && previousStatus) {
-              console.log(`Dispositivo ${device.deviceName} está dentro de la geozona ${geozone.name}`);
-              deviceStatusMap.set(deviceKey, false); // Actualizar el estado del dispositivo
+              console.log(`Dispositivo ${device.deviceName} ha regresado a la geozona ${geozone.name}`);
+              const notificacion = new Notification({
+                imei: latestDeviceStatus.imei,
+                notificationName: `Regreso a la geozona ${geozone.name}`,
+                notificationTime: latestDeviceStatus.fixTime,
+                notificationType: 'geozone'
+              });
+              const alert = new Alert({
+                imei: latestDeviceStatus.imei,
+                alertName: `Regreso a la geozona ${geozone.name}`,
+                alertTime: latestDeviceStatus.fixTime,
+                alertType: 'geozone'
+              });
+              try {
+                await notificacion.save();
+                await alert.save();
+                console.log(`Notificación de regreso a la geozona guardada para IMEI: ${latestDeviceStatus.imei}`);
+                deviceStatusMap.set(deviceKey, false); // Actualizar el estado del dispositivo
+              } catch (error) {
+                console.error('Error al guardar la notificación:', error);
+              }
             }
           } else {
             console.log('El dispositivo no tiene una geozona asignada.');
