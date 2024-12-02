@@ -70,29 +70,27 @@ const markAsRead = (index) => {
 };
 
 const cargarNotificaciones = async () => {
-    try {
-        const response = await fetch('http://3.12.147.103/notificaciones');
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error del servidor:', errorText);
-            return;
-        }
-        const data = await response.json();
-        console.log(data); // Verifica los datos recibidos
-
-        // Filtrar nuevas alertas
-        const nuevasAlertas = data.filter(alerta => !notifications.value.some(a => a._id === alerta._id));
-        if (nuevasAlertas.length > 0) {
-            notifications.value = [...notifications.value, ...nuevasAlertas];
-        }
-
-        // Ordenar las notificaciones por fecha en orden descendente
-        notifications.value.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
-
-        // Mostrar alerta si hay una alerta en la respuesta
-    } catch (error) {
-        console.error('Error al cargar notificaciones:', error);
+  try {
+    const response = await fetch('http://3.12.147.103/notificaciones');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error del servidor:', errorText);
+      return;
     }
+    const data = await response.json();
+    console.log(data); // Verifica los datos recibidos
+
+    // Filtrar nuevas alertas
+    const nuevasAlertas = data.filter(alerta => !notifications.value.some(a => a._id === alerta._id));
+    if (nuevasAlertas.length > 0) {
+      notifications.value = [...notifications.value, ...nuevasAlertas];
+    }
+
+    // Ordenar las notificaciones por fecha en orden descendente
+    notifications.value.sort((a, b) => new Date(b.notificationTime) - new Date(a.notificationTime));
+  } catch (error) {
+    console.error('Error al cargar notificaciones:', error);
+  }
 };
 
 const clearNotifications = async () => {
@@ -107,29 +105,28 @@ const clearNotifications = async () => {
 };
 
 onMounted(() => {
-    cargarNotificaciones();
+  cargarNotificaciones();
 
-    let ws = new WebSocket('ws://3.12.147.103');
-    ws.onmessage = (event) => {
-    
-        const notificacion = JSON.parse(event.data);
-        if (!notifications.value.some(alert => alert._id === notificacion._id)) {
-            notifications.value.push(notificacion);
-        }
-        if(event){
-            cargarNotificaciones();
-        }
-    };
-    ws.onclose = () => {
-        console.log('WebSocket cerrado. Reintentando...');
-        setTimeout(() => {
-            const newWs = new WebSocket('ws://3.12.147.103');
-            ws = newWs;
-        }, 5000);
-    };
-    ws.onerror = (error) => {
-        console.error('Error en WebSocket:', error);
-    };
+  let ws = new WebSocket('ws://3.12.147.103');
+  ws.onmessage = (event) => {
+    const notificacion = JSON.parse(event.data);
+    if (!notifications.value.some(alert => alert._id === notificacion._id)) {
+      notifications.value.push(notificacion);
+    }
+    if(event){
+        cargarNotificaciones();
+    }
+  };
+  ws.onclose = () => {
+    console.log('WebSocket cerrado. Reintentando...');
+    setTimeout(() => {
+      const newWs = new WebSocket('ws://3.12.147.103');
+      ws = newWs;
+    }, 5000);
+  };
+  ws.onerror = (error) => {
+    console.error('Error en WebSocket:', error);
+  };
 });
 </script>
 
