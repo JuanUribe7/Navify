@@ -394,11 +394,11 @@ changeStream.on('change', async (change) => {
                 await ignitionNotification.save();
                 await ignitionAlert.save();
                 console.log(`Notificación de ${latestDeviceStatus.ignition ? 'motor encendido' : 'motor apagado'} guardada para IMEI: ${latestDeviceStatus.imei}`);
+                deviceStatusMap.set(`${device.imei}-ignition`, latestDeviceStatus.ignition); // Actualizar el estado del dispositivo
               } catch (error) {
                 console.error('Error al guardar la notificación de ignition:', error);
               }
             }
-            deviceStatusMap.set(`${device.imei}-ignition`, latestDeviceStatus.ignition);
           } else {
             console.log('El dispositivo no tiene una geozona asignada.');
           }

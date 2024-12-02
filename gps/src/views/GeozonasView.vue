@@ -211,7 +211,8 @@ const cargarDispositivos = async () => {
     const data = await response.json();
     console.log(data);
     devices.value = data;
-    filterResults(); // Actualizar los resultados filtrados
+
+ // Actualizar los resultados filtrados
   } catch (error) {
     console.error('Error al cargar dispositivos:', error);
   }
@@ -225,8 +226,9 @@ const cargarGeozonas = async () => {
     }
     const data = await response.json();
     geozones.value = data.filter(item => item.name); // Filtrar geozonas sin nombre
+    filteredResults.value=geozones.value
     console.log('Geozonas cargadas:', geozones.value);
-    filterResults(); // Actualizar los resultados filtrados
+// Actualizar los resultados filtrados
   } catch (error) {
     console.error('Error al cargar geozonas:', error);
   }
@@ -417,7 +419,7 @@ const saveGeozone = async () => {
       showDeviceModal.value = true; // Mostrar el modal de dispositivos
       await cargarDispositivos(); // Actualizar la lista de dispositivos
       await cargarGeozonas(); // Actualizar la lista de geozonas
-      filterResults(); // Actualizar los resultados filtrados
+       // Actualizar los resultados filtrados
   } catch (error) {
     console.error('Error al crear la geozona:', error.response ? error.response.data : error.message);
     Swal.fire({
