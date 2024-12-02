@@ -113,9 +113,6 @@ onMounted(() => {
     if (!notifications.value.some(alert => alert._id === notificacion._id)) {
       notifications.value.push(notificacion);
     }
-    if(event){
-        cargarNotificaciones();
-    }
   };
   ws.onclose = () => {
     console.log('WebSocket cerrado. Reintentando...');
