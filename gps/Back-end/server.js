@@ -32,7 +32,7 @@ const brokerUser = process.env.MQTT_BROKER_USER || 'DiegoGPS';
 const brokerPasswd = process.env.MQTT_BROKER_PASSWD || 'Dl1042248136!';
 
 let previousSpeed = 0;
-const BRAKING_THRESHOLD = 80;
+const BRAKING_THRESHOLD = 30;
 
 app.get('/send-command/:commandNumber', (req, res) => {
     const commandNumber = parseInt(req.params.commandNumber, 10);
@@ -101,7 +101,7 @@ var tcpServer = net.createServer((client) => {
                 const localTimeISO = localTime.toISOString();
 
                 //agregar alertas y notificaciones de velocidad
-                if (gt06.speed > 12) {
+                if (gt06.speed > 35) {
                     console.log(`Velocidad de ${gt06.speed} km/h detectada, creando alerta...`);
                     const notificacion = new Notification({
                         imei: gt06.imei,
