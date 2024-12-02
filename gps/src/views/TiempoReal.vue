@@ -62,6 +62,8 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import { formatDate, utc } from '../../Back-end/utils/formatearFecha';
 import axios from 'axios';
+import 'leaflet.marker.slideto';
+
 // Configuración de Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -72,6 +74,7 @@ L.Icon.Default.mergeOptions({
 
 // Variables reactivas
 let map;
+let marker = null;
 const deviceName = ref('');
 const fixTimeDOM = ref('');
 const speedDOM = ref(0);
@@ -131,12 +134,6 @@ async function showDeviceOnMap(data) {
     return;
   }
 
-  // Limpiar marcadores existentes
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Marker) {
-      map.removeLayer(layer);
-    }
-  });
 
   deviceName.value = name;
   fixTimeDOM.value = fixTime;
@@ -148,8 +145,14 @@ async function showDeviceOnMap(data) {
   map.setView([lat, lon], 18);
 
   // Añadir un nuevo marcador para el dispositivo
-  const marker = L.marker([lat, lon]).addTo(map);
-
+  if (!marker) {
+    marker = L.marker([lat, lon]).addTo(map);
+  } else {
+    marker.slideTo([lat, lon], {
+      duration: 1000,
+      keepAtCenter: true
+    });
+  }
   // Mostrar información del dispositivo en un popup
 
   // Forzar una actualización del mapa
