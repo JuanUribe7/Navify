@@ -10,6 +10,7 @@ import accidente from  './assets/accidente.jpg'
 import radar from  './assets/radar-de-velocidad.png'
 import mapas from  './assets/mapas.png'
 import freno from  './assets/freno.png'
+import motor from './assets/motor.png'
 // Configurar WebSocket
 const ws = new WebSocket('ws://3.12.147.103');
 ws.onmessage = (event) => {
@@ -27,14 +28,14 @@ ws.onmessage = (event) => {
         title: 'Notificación',
         message: notificacion.notificationName || 'Nueva notificación',
         position: 'bottomRight',
-        image: freno,
+        image: gasolinaImage,
         timeout: 5000 // Mostrar la alerta durante 5 segundos
     }):(notificacion.notificationType=="hardBraking")?
 iziToast.warning({
     title: 'Notificación',
     message: notificacion.notificationName || 'Nueva notificación',
     position: 'bottomRight',
-    image: accidente,
+    image: freno,
     timeout: 5000 // Mostrar la alerta durante 5 segundos
 }):(notificacion.notificationType=="geozone")?
 iziToast.warning({
@@ -43,6 +44,13 @@ iziToast.warning({
     position: 'bottomRight',
     image: mapas,
     timeout: 8000 // Mostrar la alerta durante 5 segundos
+}):(notificacion.notificationType=="moto")?
+iziToast.warning({
+    title: 'Notificación',
+    message: notificacion.notificationName || 'Nueva notificación',
+    position: 'bottomRight',
+    image: motor,
+    timeout: 5000 // Mostrar la alerta durante 5 segundos
 }):null;
 
 

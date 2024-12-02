@@ -224,54 +224,68 @@ app.use('/notificaciones', notificacionRoutes);
 app.use('/geozone', geozoneRoutes);
 
 async function SendCommand(commandNumber) {
-    let commandBuffer;
-    let alertaName;
-    switch (commandNumber) {
-        case 0: // Apagar el carro
-          commandBuffer = Buffer.from([0x78, 0x78, 0x15, 0x80, 0x0F, 0x00, 0x01, 0xA9, 0x61, 0x44, 0x59, 0x44, 0x2C, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x23, 0x00, 0xA0, 0x3E, 0x10, 0x0D, 0x0A]);
-          alertaName = 'Combustible cortado';
-          break;
-        case 1: // Encender el carro
-          commandBuffer = Buffer.from([0x78, 0x78, 0x16, 0x80, 0x10, 0x00, 0x01, 0xA9, 0x63, 0x48, 0x46, 0x59, 0x44, 0x2C, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x23, 0x00, 0xA0, 0x7B, 0xDC, 0x0D, 0x0A]);
-          alertaName = 'Combustible restablecido';
-          break;
-        default:
-          console.error('Comando no reconocido');
-          return;
-      }
-    
-      if (cliente) {
-        cliente.write(commandBuffer);
-        console.log('Command sent:', commandBuffer.toString('hex'));
-        const time = new Date();
-        // Guardar la notificación en la base de datos
-        const localTimeString = time.toLocaleString('en-US', { timeZone: 'America/Bogota' });
-        const localTime = new Date(localTimeString);
-
-        const notification = new Notification({
-            imei: "863829070233398",
-            notificationName: alertaName ,
-            notificationTime: localTime,
-            notificationType: 'Control'
-          });
-
-          const alert = new Alert({
-            imei: "863829070233398",
-            alertName: alertaName,
-            alertTime: localTime,
-            alertType: 'control'
-        });
-          try {
-            await notification.save();
-            await alert.save();
-            console.log('Notificación guardada en la base de datos');
-          } catch (error) {
-            console.error('Error al guardar la notificación en la base de datos:', error);
-          }
-    } else {
-        console.error('No GPS client connected');
+  let commandBuffer;
+  let alertaName;
+  switch (commandNumber) {
+      case 0: // Apagar el carro
+        commandBuffer = Buffer.from([0x78, 0x78, 0x15, 0x80, 0x0F, 0x00, 0x01, 0xA9, 0x61, 0x44, 0x59, 0x44, 0x2C, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x23, 0x00, 0xA0, 0x3E, 0x10, 0x0D, 0x0A]);
+        alertaName = 'Combustible cortado';
+        break;
+      case 1: // Encender el carro
+        commandBuffer = Buffer.from([0x78, 0x78, 0x16, 0x80, 0x10, 0x00, 0x01, 0xA9, 0x63, 0x48, 0x46, 0x59, 0x44, 0x2C, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x23, 0x00, 0xA0, 0x7B, 0xDC, 0x0D, 0x0A]);
+        alertaName = 'Combustible restablecido';
+        break;
+      default:
+        console.error('Comando no reconocido');
+        return;
     }
+  
+    if (cliente) {
+      cliente.write(commandBuffer);
+      console.log('Command sent:', commandBuffer.toString('hex'));
+      const time = new Date();
+      // Guardar la notificación en la base de datos
+      const localTimeString = time.toLocaleString('en-US', { timeZone: 'America/Bogota' });
+      const localTime = new Date(localTimeString);
+
+      const notification = new Notification({
+          imei: "863829070233398",
+          notificationName: alertaName ,
+          notificationTime: localTime,
+          notificationType: 'control'
+        });
+
+        const alert = new Alert({
+          imei: "863829070233398",
+          alertName: alertaName,
+          alertTime: localTime,
+          alertType: 'control'
+      });
+        try {
+          await notification.save();
+          await alert.save();
+          console.log('Notificación guardada en la base de datos');
+        } catch (error) {
+          console.error('Error al guardar la notificación en la base de datos:', error);
+        }
+  } else {
+      console.error('No GPS client connected');
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const deviceStatusMap = new Map();
 const wss = new WebSocketServer({ server });
 // Iniciar el watcher para cambios en la base de datos
@@ -360,6 +374,31 @@ changeStream.on('change', async (change) => {
                 console.error('Error al guardar la notificación:', error);
               }
             }
+
+            // Detectar cambios en el estado de ignition
+            const previousIgnitionStatus = deviceStatusMap.get(`${device.imei}-ignition`);
+            if (previousIgnitionStatus !== undefined && previousIgnitionStatus !== latestDeviceStatus.ignition) {
+              const ignitionNotification = new Notification({
+                imei: latestDeviceStatus.imei,
+                notificationName: latestDeviceStatus.ignition ? 'Motor encendido' : 'Motor apagado',
+                notificationTime: latestDeviceStatus.fixTime,
+                notificationType: 'moto'
+              });
+              const ignitionAlert = new Alert({
+                imei: latestDeviceStatus.imei,
+                alertName: latestDeviceStatus.ignition ? 'Motor encendido' : 'Motor apagado',
+                alertTime: latestDeviceStatus.fixTime,
+                alertType: 'moto'
+              });
+              try {
+                await ignitionNotification.save();
+                await ignitionAlert.save();
+                console.log(`Notificación de ${latestDeviceStatus.ignition ? 'motor encendido' : 'motor apagado'} guardada para IMEI: ${latestDeviceStatus.imei}`);
+              } catch (error) {
+                console.error('Error al guardar la notificación de ignition:', error);
+              }
+            }
+            deviceStatusMap.set(`${device.imei}-ignition`, latestDeviceStatus.ignition);
           } else {
             console.log('El dispositivo no tiene una geozona asignada.');
           }
