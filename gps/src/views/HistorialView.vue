@@ -178,7 +178,7 @@ const showHistory = async (device, startDate, endDate) => {
   }
 
   try {
-const response = await axios.get(`http://3.12.147.103/devices/history/${device.imei}`, {
+const response = await axios.get(`http://18.209.6.96/devices/history/${device.imei}`, {
   params: {
     startDate: startDate,
     endDate: endDate
@@ -289,7 +289,7 @@ const playRecording = () => {
 
 const cargarDispositivos = async () => {
   try {
-    const response = await fetch('http://3.12.147.103/devices');
+    const response = await fetch('http://18.209.6.96/devices');
     if (!response.ok) {
       throw new Error('Error en la respuesta de la API');
     }

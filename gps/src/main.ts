@@ -12,7 +12,7 @@ import mapas from  './assets/mapas.png'
 import freno from  './assets/freno.png'
 import motor from './assets/motor.png'
 // Configurar WebSocket
-const ws = new WebSocket('ws://3.12.147.103');
+const ws = new WebSocket('ws://18.209.6.96');
 ws.onmessage = (event) => {
     const notificacion = JSON.parse(event.data);
 
@@ -59,7 +59,7 @@ iziToast.warning({
 ws.onclose = () => {
     console.log('WebSocket cerrado. Reintentando...');
     setTimeout(() => {
-        const newWs = new WebSocket('ws://3.12.147.103');
+        const newWs = new WebSocket('ws://18.209.6.96');
         window.ws = newWs;
     }, 5000);
 };
