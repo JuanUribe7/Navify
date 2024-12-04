@@ -148,7 +148,7 @@ var tcpServer = net.createServer((client) => {
                 previousSpeed = gt06.speed;
 
                 const deviceData = {
-                    imei: 863829070233398,
+                    imei: gt06.imei,
                     Lat: gt06.lat,
                     Lon: gt06.lon,
                     speed: gt06.speed,
@@ -160,7 +160,7 @@ var tcpServer = net.createServer((client) => {
                     relayState: gt06.terminalInfo ? Boolean(gt06.terminalInfo.relayState) : false
                 };
                 const historyData = {
-                    imei: 863829070233398,
+                    imei: gt06.imei,
                     lat: gt06.lat,
                     lon: gt06.lon,
                     speed: gt06.speed,
