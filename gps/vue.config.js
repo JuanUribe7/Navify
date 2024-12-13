@@ -24,11 +24,11 @@ module.exports = {
   devServer: {
     proxy: {
       '/send-command': {
-        target: 'http://18.209.6.96', // Cambia esto al puerto de tu servidor backend
+        target: 'http://54.236.5.204', // Cambia esto al puerto de tu servidor backend
         changeOrigin: true
       },
       '/test': {
-        target: 'http://18.209.6.96', // Cambia esto al puerto de tu servidor backend
+        target: 'http://54.236.5.204', // Cambia esto al puerto de tu servidor backend
         changeOrigin: true
       }
     }
